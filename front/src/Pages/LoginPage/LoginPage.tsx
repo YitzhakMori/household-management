@@ -59,18 +59,18 @@ const LoginPage= () => {
       <div className={css.container}>
       <form onSubmit={handleSubmit}>
         <div className={css.formGroup}>
-          <label>Email:</label>
           <input
             type="email"
             id="email"
             value={Data.email}
             onChange={(e) => setData({ ...Data, email: e.target.value })}
-            
             required
           />
+          <label>:הכנס אימייל</label>
         </div>
+        <br />
         <div className={css.formGroup}>
-          <label htmlFor="password">Password:</label>
+          
           <input
             type="password"
             id="password"
@@ -78,6 +78,7 @@ const LoginPage= () => {
             onChange={(e) => setData({ ...Data, password: e.target.value })}
             required
           />
+          <label htmlFor="password">:הכנס סיסמה</label>
         </div>
         <button type="submit" disabled={loading}>
           {loading ? 'Logging In...' : 'Log In'}

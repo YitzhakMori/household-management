@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import css from './VerifyEmail.module.css';
 
 const VerifyEmail = () => {
   const [code, setCode] = useState<string>('');
@@ -33,22 +34,23 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div>
-      <h1>אימות מייל</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input
-            type="text"
-            id="code"
-            value={code}
-            onChange={handleCodeChange}
-            required
-          />
-          <label htmlFor="code">הכנס קוד</label>
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+    <div className={css.container}>
+    <h1>אימות מייל</h1>
+    <form onSubmit={handleSubmit} className={css.form}>
+      <div className={css.formGroup}>
+        <input
+          type="text"
+          id="code"
+          value={code}
+          onChange={handleCodeChange}
+          required
+        />
+        <label htmlFor="code">הכנס קוד</label>
+      </div>
+      <button type="submit" className={css.submitButton}>Submit</button>
+    </form>
+   
+  </div>
   );
 };
 

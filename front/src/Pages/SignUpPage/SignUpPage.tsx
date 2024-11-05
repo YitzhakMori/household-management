@@ -45,44 +45,44 @@ const SignUpPage = () => {
   };
 
   return (
-    <div>
-      <h1>להרשמה</h1>
-      <div className={css.container}>
-        <form onSubmit={handleSubmit}>
-          <div className={css.formGroup}>
-            <label htmlFor="name">name:</label>
-            <input
-              type="name"
-              id="name"
-              value={data.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className={css.formGroup}>
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              value={data.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className={css.formGroup}>
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={data.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <button type="submit">Submit</button>
-        </form>
-      </div>
+    <div className={css.signupContainer}>
+    <h1>להרשמה</h1>
+    <div className={css.formWrapper}>
+      <form onSubmit={handleSubmit} className={css.signupForm}>
+        <div className={css.formGroup}>
+          <label htmlFor="name">Name:</label>
+          <input
+            type="text"
+            id="name"
+            value={data.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className={css.formGroup}>
+          <label htmlFor="email">Email:</label>
+          <input
+            type="email"
+            id="email"
+            value={data.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className={css.formGroup}>
+          <label htmlFor="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            value={data.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit" className={css.submitButton}>Submit</button>
+      </form>
     </div>
+  </div>
   );
 };
 
