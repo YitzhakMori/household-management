@@ -14,6 +14,8 @@ route.post("/logOut",logOut)
 route.post("/verify-email",verifyEmail) 
 route.post("/forgot-password",forgotPassword) 
 route.post("/reset-password/:token", resetPassword);
+// route.post("/addFriend", addFriend);
+
 
 
 export default route;
