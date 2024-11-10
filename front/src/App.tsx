@@ -7,6 +7,7 @@ import SignUpPage from './Pages/SignUpPage/SignUpPage';
 import VerifyEmail from './Pages/VerifyEmail/VerifyEmail';
 import ForgotPassword from './Pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword/ResetPassword';
+import ShoppingList from './components/ShoppingList';
 
 
 
@@ -21,6 +22,7 @@ function App() {
          <Route  path='/forgot-password' Component={ForgotPassword}/>
          <Route  path='/reset-password/:token' Component={ResetPassword}/>
          <Route  path='/Home' Component={Home}/>
+         <Route  path='/shopping' element={<ShoppingList userId='USER_ID_HERE'/>}/>
          
          
          </Routes>

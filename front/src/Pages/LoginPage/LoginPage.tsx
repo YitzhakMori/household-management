@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import css from './LoginPage.module.css';
-import Home from '../Home/Home';
+// import Home from '../Home/Home';
 import { LoginFormData } from '../../modules/LoginDate';
 
 
@@ -41,6 +41,9 @@ const LoginPage= () => {
 
       const data = await response.json();
       console.log('Login successful:', data);
+    localStorage.setItem('token', data.token);  // save token to local storage for future requests
+    localStorage.setItem('data', JSON.stringify(data));  // save token to local storage for future requests
+
       navigate('/Home'); 
 
 

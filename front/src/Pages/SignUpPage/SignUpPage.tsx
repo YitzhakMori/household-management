@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import css from './SignupPage.module.css';
 import { SignUpFormData } from '../../modules/LoginDate';
-import Home from '../Home/Home';
+// import Home from '../Home/Home';
 
 const SignUpPage = () => {
   const [data, setData] = useState<SignUpFormData>({
@@ -27,7 +27,6 @@ const SignUpPage = () => {
       if (!response.ok) {
         throw new Error('Invalid credentials');
       }
-
       const responseData = await response.json();
       console.log('signUp successful:', responseData);
       navigate('/verify-email',);
