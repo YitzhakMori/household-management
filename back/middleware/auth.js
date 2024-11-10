@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.model.js';
 
-const auth = async (req, res, next) => {
+export const auth = async (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
         if (!token) {
@@ -18,6 +18,7 @@ const auth = async (req, res, next) => {
         next();
     } catch (error) {
         res.status(401).json({ message: "ההרשאה נכשלה" });
+        console.log(error);
     }
 };
 
