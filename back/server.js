@@ -5,7 +5,6 @@ import HouseRoutes from "./routes/House.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import shoppingRoutes from "./routes/shoppingRoutes.js";
-import friendsRoutes from "./routes/friends.js"; // ייבוא נתיב החברים
 
 
 dotenv.config();
@@ -19,7 +18,6 @@ app.use(cookieParser())
 app.use("/api/House", HouseRoutes)
 
 app.use('/api/shopping', shoppingRoutes);
-app.use("/api/friends", friendsRoutes); // חיבור הנתיב החדש להוספת חברים
 
 
 
