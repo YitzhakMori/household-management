@@ -41,8 +41,12 @@ const LoginPage= () => {
 
       const data = await response.json();
       console.log('Login successful:', data);
+
     localStorage.setItem('token', data.token);  // save token to local storage for future requests
     localStorage.setItem('data', JSON.stringify(data));  // save token to local storage for future requests
+
+    console.log("Token saved:", data.token);  // הדפסת הטוקן לקונסולה
+
 
       navigate('/Home'); 
 

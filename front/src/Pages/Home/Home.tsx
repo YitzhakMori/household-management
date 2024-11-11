@@ -11,15 +11,15 @@ const HomePage: React.FC = () => {
 
     useEffect(() => {
         const userIdFromToken = getUserIdFromToken();
-        console.log("User ID from token:", userIdFromToken); // הוסף שורה זו
+        console.log("Token from localStorage:", localStorage.getItem('token'));
 
-
+        console.log("User ID from token:", userIdFromToken);
         setUserId(userIdFromToken);
 
+
     }, []);
-    useEffect(() => {
-        console.log({userId});
-    }, [userId]);
+
+  
 
     return (
         <div className="home-page">

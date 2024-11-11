@@ -1,64 +1,51 @@
 // src/components/AddFriend.tsx
-
 import React, { useState } from 'react';
-import { getUserIdFromToken} from '../utils/utils';
 
 interface AddFriendProps {
-    userId: string; 
+    userId: string;
 }
 
-
-
-
-
-const AddFriend: React.FC<AddFriendProps> = () => {
+const AddFriend: React.FC<AddFriendProps> = ({ userId }) => {
+   
+    
+    
     const [friendEmail, setFriendEmail] = useState('');
     const [message, setMessage] = useState('');
-const userId = getUserIdFromToken()
- 
 
     const handleAddFriend = async () => {
-        if (!userId) {
-            setMessage('User not logged in');
-            return;
-        }
-        if (!friendEmail) {
-            setMessage('Please enter a friend\'s email');
-            return;
-        }
-
         try {
-            const response = await fetch('/api/users/add-friend', {
+            const token = localStorage.getItem('token'); // קבלת הטוקן מהמקומי
+            const response = await fetch('http://localhost:5001/api/House/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ userId, friendEmail }),
+                body: JSON.stringify({ friendEmail }),
             });
 
             const data = await response.json();
-
             if (response.ok) {
-                setMessage(data.message); // הצגת הודעה למשתמש שהחבר נוספה בהצלחה
-                setFriendEmail(''); // לנקות את השדה לאחר הוספה מוצלחת
+                setMessage('החבר נוסף בהצלחה');
             } else {
-                setMessage(data.error || 'Failed to add friend');
+                setMessage(data.message || 'שגיאה בהוספת חבר');
             }
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            console.error(error);
+            setMessage('שגיאה בהוספת חבר');
         }
     };
 
     return (
         <div>
-            <h2>Add a Friend</h2>
+            <h3>הוסף חבר</h3>
             <input
                 type="email"
-                placeholder="Enter friend's email"
+                placeholder="הכנס אימייל של חבר"
                 value={friendEmail}
                 onChange={(e) => setFriendEmail(e.target.value)}
             />
-            <button onClick={handleAddFriend}>Add Friend</button>
+            <button onClick={handleAddFriend}>הוסף</button>
             {message && <p>{message}</p>}
         </div>
     );
