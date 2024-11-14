@@ -35,7 +35,7 @@ const HomePage: React.FC = () => {
             </ul>
 
 
-            {/* {userId && <AddFriend userId={userId} />} */}
+            {userId && <AddFriend userId={userId} />}
 
         </div>
     );

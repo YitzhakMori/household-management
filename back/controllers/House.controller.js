@@ -186,6 +186,7 @@ export const checkAuth = async (req, res) => {
 };
 
 
+
 export const addFriend = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -211,6 +212,6 @@ export const addFriend = async (req, res) => {
         res.status(200).json({ message: "החבר נוסף בהצלחה" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "שגיאה בשרת" });
+        res.status(500).json({ message: "שגיאה בשרת" });
     }
 };
