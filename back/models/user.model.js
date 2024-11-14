@@ -26,8 +26,14 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpire:Date,
     verificationToken:String,
     verificationTokenExpiresAt:Date,
-    friends:[{type: String}]
+    friends:[{type: String}],
+    role:{
+        type: String,
+        enum:['user', 'admin'],
+        default:'user'
+    }
 
     },{timestamps:true})
 
-export const User = mongoose.model("User",userSchema);
+const User = mongoose.model("User",userSchema);
+export default User;
