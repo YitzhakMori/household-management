@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
-export const generateTokenAndSetCookie = (res, user_id) => {
-    const token = jwt.sign({ user_id }, process.env.JWT_SECRET, {
+export const generateTokenAndSetCookie = (res, user_id,role) => {
+    const token = jwt.sign({ user_id,role }, process.env.JWT_SECRET, {
         expiresIn: "7d",
     });
 
@@ -14,10 +14,6 @@ export const generateTokenAndSetCookie = (res, user_id) => {
     });
 
     // החזרת הטוקן בתגובה
-    return res.status(200).json({
-        success: true,
-        message: "Logged in successfully",
-        token: token,  // שליחת הטוקן לצד הלקוח
-    });
+    return token
 };
 

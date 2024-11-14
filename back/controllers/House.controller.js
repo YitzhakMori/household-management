@@ -1,4 +1,4 @@
-import { User } from "../models/user.model.js";
+import  User  from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
@@ -13,7 +13,7 @@ export const signUp = async (req, res) => {
     const { name, email, password } = req.body
     try {
         if (!name || !email || !password) {
-            throw new Error("All fields are required")
+            return res.status(400).json({ success: false, message: "All fields are required" })
         }
 
         const userAlreadyExist = await User.findOne({ email })
@@ -32,23 +32,25 @@ export const signUp = async (req, res) => {
         })
 
         await user.save()
-        generateTokenAndSetCookie(res, user._id)
+        const token = generateTokenAndSetCookie(res, user._id)
         // await sendVerificationEmail(user.email, verificationToken)
 
 
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "User created successfully",
             user: {
-                ...user._doc,
+                ...user.toObject(),
                 password: undefined
             },
+            token: token,
         })
     }
 
     catch (error) {
-        res.status(400).json({ success: false, message: error.message })
+        console.error("error in signUp ", error);
+        return res.status(500).json({ success: false, message: error.message })
     }
 }
 
@@ -101,26 +103,27 @@ export const login = async (req, res) => {
         }
 
         // יצירת טוקן ושמירתו בעוגיה
-        const token = generateTokenAndSetCookie(res, user._id); // שמירה בעוגיה והחזרת הטוקן
+        const token = generateTokenAndSetCookie(res, user._id,user.role); // שמירה בעוגיה והחזרת הטוקן
 
         // עדכון זמן הכניסה האחרון של המשתמש
         user.lastLogin = new Date();
         await user.save();
 
-        // החזרת המידע על המשתמש והטוקן בתגובה
-        res.status(200).json({
+
+         // החזרת מידע משתמש בצורה נקייה מבלי לכלול מעגלים או מידע מיותר
+        const userWithoutPassword = user.toObject();
+        delete userWithoutPassword.password;
+
+        return res.status(200).json({
             success: true,
             message: "logged in successfully",
-            user: {
-                ...user._doc,
-                password: undefined
-            },
-            token, // החזרת הטוקן
+            user: userWithoutPassword,
+            token,
         });
 
     } catch (error) {
         console.log("error in login ", error);
-        res.status(400).json({ success: false, message: error.message });
+        return res.status(400).json({ success: false, message: error.message });
     }
 };
 
