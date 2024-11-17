@@ -42,7 +42,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
       return children;
     } else {
       console.warn('User is not admin, redirecting to Home.');
-      console.log("Navigate to=/Home")
       return <Navigate to="/Home" />;
     }
   } catch (error) {
@@ -60,6 +59,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/Home" element={<Home />} />
         <Route 
           path="/Home" 
           element={
