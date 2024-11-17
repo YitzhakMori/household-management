@@ -11,6 +11,7 @@ const AddFriend: React.FC<AddFriendProps> = ({ userId }) => {
   const handleAddFriend = async () => {
     try {
       const token = localStorage.getItem('token'); // קבלת הטוקן מהמקומי
+      
       const response = await fetch('http://localhost:5001/api/House/add', {
         method: 'POST',
         headers: {

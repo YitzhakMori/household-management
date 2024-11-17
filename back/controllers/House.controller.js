@@ -87,34 +87,41 @@ export const verifyEmail = async (req, res) => {
 
 
 export const login = async (req, res) => {
-    const { email, password } = req.body
+    const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" })
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
         }
-        const isPasswordCorrect = await bcryptjs.compare(password, user.password)
+        const isPasswordCorrect = await bcryptjs.compare(password, user.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" })
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
         }
-        generateTokenAndSetCookie(res, user._id)
-        user.lastLogin = new Date()
-        await user.save()
-        res.status(200).json({
+
+        // יצירת טוקן ושמירתו בעוגיה
+        const token = generateTokenAndSetCookie(res, user._id); // שמירה בעוגיה והחזרת הטוקן
+
+        // עדכון זמן הכניסה האחרון של המשתמש
+        user.lastLogin = new Date();
+        await user.save();
+
+
+         // החזרת מידע משתמש בצורה נקייה מבלי לכלול מעגלים או מידע מיותר
+        const userWithoutPassword = user.toObject();
+        delete userWithoutPassword.password;
+
+        return res.status(200).json({
             success: true,
             message: "logged in successfully",
-            user: {
-                ...user._doc,
-                password: undefined
-            },
-        })
+            user: userWithoutPassword,
+            token,
+        });
 
     } catch (error) {
-        console.log("error in login ", error)
-        res.status(400).json({ success: false, message: error.message })
+        console.log("error in login ", error);
+        return res.status(400).json({ success: false, message: error.message });
     }
-}
-
+};
 
 export const logOut = async (req, res) => {
     res.clearCookie("token");
