@@ -21,7 +21,7 @@ const createAdmin = async () => {
 
         if (!existingAdmin) {
             // סיסמה שאתה רוצה להגדיר לאדמין
-            const plainPassword = 'yourAdminPassword123'; // הכנס כאן את הסיסמה שלך
+            const plainPassword = '123123'; // הכנס כאן את הסיסמה שלך
 
             // הצפנת הסיסמה
             const hashedPassword = await bcrypt.hash(plainPassword, 10);
