@@ -21,6 +21,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/loginPage" element={<LoginPage />} />
+        <Route path="/Home" element={<Home />} />
         <Route path="/shopping" element={<ShoppingList userId="USER_ID_HERE" />} />
          
          
