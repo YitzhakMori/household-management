@@ -42,7 +42,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
       return children;
     } else {
       console.warn('User is not admin, redirecting to Home.');
-      console.log("Navigate to=/Home")
       return <Navigate to="/Home" />;
     }
   } catch (error) {
