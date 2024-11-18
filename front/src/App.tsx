@@ -1,15 +1,17 @@
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import LoginPage from './Pages/LoginPage/LoginPage';
+import LoginPage from './components/LoginPage/LoginPage';
 import Home from './Pages/Home/Home';
-import SignUpPage from './Pages/SignUpPage/SignUpPage';
-import VerifyEmail from './Pages/VerifyEmail/VerifyEmail';
-import ForgotPassword from './Pages/ForgotPassword/ForgotPassword';
-import ResetPassword from './Pages/ResetPassword/ResetPassword';
-import ShoppingList from './components/ShoppingList';
-import AdminPage from './components/Admin'; // דף האדמין שלך
+import SignUpPage from './components/SignUpPage/SignUpPage';
+import VerifyEmail from './components/VerifyEmail/VerifyEmail';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import ResetPassword from './components/ResetPassword/ResetPassword';
+import ShoppingList from './Pages/Shopping/ShoppingList';
+import AdminPage from './components/Admin/Admin';
 import {jwtDecode} from 'jwt-decode'; // ייבוא מתוקן
+import HomeMain from './Pages/HomeMain/HomeMain';
+import AddFriend from './components/AddFriend/AddFriend';
 
 // פונקציה שמבצעת בדיקה אם המשתמש הוא אדמין או לא
 interface DecodedToken {
@@ -51,15 +53,19 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 function App() {
+  
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<HomeMain />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/signUp" element={<SignUpPage />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Home" element={<Home />} />
+        <Route path="/add-friend" element={<AddFriend userId="exampleUserId" />} /> 
+
         <Route 
           path="/Home" 
           element={

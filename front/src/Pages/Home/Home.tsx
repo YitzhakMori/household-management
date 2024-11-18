@@ -1,42 +1,41 @@
-// src/pages/HomePage.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddFriend from '../../components/AddFriend';
-import { useState, useEffect } from 'react';
+import AddFriend from '../../components/AddFriend/AddFriend';
 import { getUserIdFromToken } from '../../utils/utils';
+import NavHome from "../../nav/NavHome";
+import css from './Home.module.css';
 
-const HomePage: React.FC = () => {
+const Home: React.FC = () => {
     const [userId, setUserId] = useState<string | null>(null);
+    const [showAddFriendModal, setShowAddFriendModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const userIdFromToken = getUserIdFromToken();
-        console.log("Token from localStorage:", localStorage.getItem('token'));
-
-        console.log("User ID from token:", userIdFromToken);
         setUserId(userIdFromToken);
-
-
     }, []);
 
-  
-
     return (
-        <div className="home-page">
+        <div className={css.homePage}>
+            <NavHome />
             <h1>ניהול משק בית</h1>
             <ul>
                 <li onClick={() => navigate('/shopping')}>קניות</li>
-
                 <li>משימות</li>
                 <li>אירועים</li>
                 <li>הוצאות והכנסות</li>
+               
             </ul>
-
-
-            {userId && <AddFriend userId={userId} />}
-
+            {showAddFriendModal && (
+                <div className={css.modal}>
+                    <div className={css.modalContent}>
+                        <span className={css.close} onClick={() => setShowAddFriendModal(false)}>&times;</span>
+                        {userId && <AddFriend userId={userId} />}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default HomePage;
+export default Home;

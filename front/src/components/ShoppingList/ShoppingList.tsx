@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingItem } from '../interfaces/ShoppingItem';
+import { ShoppingItem } from '../../interfaces/ShoppingItem';
 
 interface ShoppingListProps {
     userId: string;
