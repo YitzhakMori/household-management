@@ -12,6 +12,7 @@ import AdminPage from './components/Admin/Admin';
 import {jwtDecode} from 'jwt-decode'; // ייבוא מתוקן
 import HomeMain from './Pages/HomeMain/HomeMain';
 import AddFriend from './components/AddFriend/AddFriend';
+import EventsPage from "./Pages/Event/EventsPage"
 
 // פונקציה שמבצעת בדיקה אם המשתמש הוא אדמין או לא
 interface DecodedToken {
@@ -64,7 +65,9 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Home" element={<Home />} />
-        <Route path="/add-friend" element={<AddFriend userId="exampleUserId" />} /> 
+        <Route path="/add-friend" element={<AddFriend userId="exampleUserId" />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/admin" element={<AdminPage />} /> 
 
         <Route 
           path="/Home" 
