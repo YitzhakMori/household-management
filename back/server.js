@@ -9,11 +9,12 @@ import shoppingRoutes from "./routes/shoppingRoutes.js";
 import User from './models/user.model.js'; // הייבוא של מודל המשתמש
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
 
+
+
 dotenv.config();
 
 const PORT = process.env.PORT || 5001;
 const app = express();
-
 const createAdmin = async () => {
     try {
         // בודק אם כבר קיים משתמש אדמין במערכת

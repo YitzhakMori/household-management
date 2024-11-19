@@ -1,0 +1,21 @@
+.events-page {
+    padding: 20px;
+  }
+  
+  input[type="date"] {
+    margin-right: 10px;
+  }
+  
+  button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
