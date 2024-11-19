@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import  User  from '../models/user.model.js';
+import User from '../models/user.model.js';
 
 export const auth = async (req, res, next) => {
     try {
@@ -15,11 +15,20 @@ export const auth = async (req, res, next) => {
         }
 
         // הוספת המידע של המשתמש (כולל ה-role) ל-req.user
-        req.user = { 
-            id: user._id, 
-            role: user.role,  // הוספת ה-role
-            email: user.email  // אם צריך מידע נוסף
-        };
+        // req.user = { 
+        //     id: user._id, 
+        //     role: user.role,  // הוספת ה-role
+        //     email: user.email  // אם צריך מידע נוסף
+        //     friends: user.friends
+
+        // };
+        req.user = {};
+        req.user.id = user._id;
+        req.user.role = user.role;
+        req.user.email = user.email;
+        req.user.friends = user.friends;
+
+
         next();
     } catch (error) {
         res.status(401).json({ message: "ההרשאה נכשלה" });
