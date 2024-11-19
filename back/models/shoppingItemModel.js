@@ -5,7 +5,6 @@ const shoppingItemSchema = new mongoose.Schema({
     name: {type: String, required: true},
     quantity: {type: Number, default: 1},
     isPurchased: {type: Boolean, default: false},
-    users:[{type: String}]
 })
 
 export default mongoose.model("ShoppingItem", shoppingItemSchema);
