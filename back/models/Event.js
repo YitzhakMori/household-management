@@ -5,7 +5,7 @@ const eventSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   description: { type: String, required: true },
   userId: { type: String, required: true },
+  eventGroupId: { type: mongoose.Schema.Types.ObjectId, required: true } 
 });
 
-const Event = mongoose.model('Event', eventSchema);
-export default Event;
+export default mongoose.model('Event', eventSchema);
