@@ -5,6 +5,7 @@ import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js
 import { sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/emails.js";
 import { sendWelcomeEmail } from "../mailtrap/emails.js";
 import { sendPasswordResetEmail } from "../mailtrap/emails.js";
+import { error } from "console";
 
 
 
@@ -202,12 +203,18 @@ export const checkAuth = async (req, res) => {
 export const addFriend = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { friendEmail } = req.body;
+    
+        const  {friendEmail}  = req.body;
+        const userEmail = req.user.email
+
+        if (friendEmail === userEmail) {
+            return res.status(400).json({ message: "לא ניתן להוסיף את עצמך כחבר" });
+        }
+        
 
         if (!friendEmail) {
             return res.status(400).json({ message: "יש להזין מייל של חבר" });
         }
-
         const friendUser = await User.findOne({ email: friendEmail });
         if (!friendUser) {
             return res.status(404).json({ message: "המשתמש המבוקש לא נמצא" });
@@ -215,15 +222,55 @@ export const addFriend = async (req, res) => {
 
         const user = await User.findById(userId);
         if (user.friends.includes(friendEmail)) {
-            return res.status(400).json({ message: "החבר כבר קיים ברשימה" });
+            return res.status(400).json({ message: "החבר כבר קיים ברשימה",friend:  friendUser });
         }
 
         user.friends.push(friendEmail);
         await user.save();
 
-        res.status(200).json({ message: "החבר נוסף בהצלחה" });
+        friendUser.friends.push(userEmail);
+        await friendUser.save();
+
+        res.status(200).json({ message: "החבר נוסף בהצלחה",friend:  friendUser}); ;
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "שגיאה בשרת" });
     }
 };
+
+export const removeFriend = async (req,res)=> {
+    try{
+        const userId = req.user.id;
+        const { friendEmail } = req.body;
+
+        if (!friendEmail){
+            return res.status(400).json({massage: "יש להזין מייל למחיקה"})
+        }
+
+        const user = await User.findById(userId);
+        const friendUser = await User.findOne({email: friendEmail})
+
+        if (!friendUser){
+            return res.status(404).json({massage: "המשתמש המבוקש לא נמצא"})
+        }
+        if (!user.friends.includes(friendEmail)){
+            return res.status(400).json({massage: "מייל זה אינו מופיע בחברים שלך"})
+        }
+       
+      
+        user.friends = user.friends.filter(friend => friend!== friendEmail);
+        await user.save();
+
+        const userEmail =user.email
+        friendUser.friends = friendUser.friends.filter(friend => friend!== userEmail);
+        await friendUser.save();
+
+        res.status(200).json({message: "מייל זה הוסר בהצלחה מהרשימה"})
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({message: "שגיאה בשרת"})
+
+    }
+
+}
+    

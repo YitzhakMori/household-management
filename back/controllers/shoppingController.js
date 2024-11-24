@@ -51,45 +51,75 @@ export const addItem = async (req, res) => {
 }
 
 
-// export const getItems = async (req, res) =>{
-//     try {
-//         const userId = req.user.id;
-//         const items = await shoppingItemSchemata.find({ userId });
-//         res.json(items);
-//     } catch (error) {
-//         res.status(500).json({ error: error.massage || "Failed to get items" })
-//     }
-// }
-
-
-export const getItems = async (req, res) => {
+export const getItems = async (req, res) =>{
     try {
         const userId = req.user.id;
-
-        // שליפת החברים של המשתמש
-        const user = await User.findById(userId);
-        const friendsEmails = user.friends || [];
-        console.log("Friends emails:", friendsEmails);  // לוג למיילים של החברים
-
-
-        // שליפת ה-userId של כל החברים
-        const friends = await User.find({ email: { $in: friendsEmails } });
-        const friendsIds = friends.map(friend => friend._id);
-        console.log("Friends IDs:", friendsIds);  // לוג לכל ה־IDs של החברים
-
-
-        // שליפת המוצרים של המשתמש ושל החברים
-        const items = await shoppingItemSchemata.find({
-            userId: { $in: [userId, ...friendsIds] }
-        });
-        console.log("Fetched items:", items);  // לוג של המוצרים שנשלפו
-
-
-        res.status(200).json(items);
+        const items = await shoppingItemSchemata.find({ userId });
+        res.json(items);
     } catch (error) {
-        res.status(500).json({ error: error.message || "Failed to fetch items" });
+        res.status(500).json({ error: error.massage || "Failed to get items" })
     }
-};
+}
+
+
+// export const getItems = async (req, res) => {
+//     try {
+//         const userId = req.user.id;
+
+//         // שליפת החברים של המשתמש
+//         const user = await User.findById(userId);
+//         const friendsEmails = user.friends || [];
+//         console.log("Friends emails:", friendsEmails);  // לוג למיילים של החברים
+
+
+//         // שליפת ה-userId של כל החברים
+//         const friends = await User.find({ email: { $in: friendsEmails } });
+//         const friendsIds = friends.map(friend => friend._id);
+//         console.log("Friends IDs:", friendsIds);  // לוג לכל ה־IDs של החברים
+
+
+//         // שליפת המוצרים של המשתמש ושל החברים
+//         const items = await shoppingItemSchemata.find({
+//             userId: { $in: [userId, ...friendsIds] }
+//         });
+//         console.log("Fetched items:", items);  // לוג של המוצרים שנשלפו
+
+
+//         res.status(200).json(items);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message || "Failed to fetch items" });
+//     }
+// };
+
+
+export const deleteItem = async (req, res) => {
+    try {
+    const  userId  = req.user.id;
+    const { itemId } = req.params;
+    console.log("userId:", userId);
+    console.log("itemId:", itemId);
+
+    const user = await User.findById(userId)
+    console.log("user:",user);
+    if (!user){
+        return res.status(404).json( { massage: "User not found" });
+    }
+    const friendsEmails = user.friends;
+    const friends = await User.find( { email: {$in: friendsEmails}}).select("_id");
+
+    const friendsIds = friends.map(friend => friend.id)
+
+    await shoppingItemSchemata.findOneAndDelete( {_id: itemId, userId})
+
+    await shoppingItemSchemata.deleteMany( {_id: itemId, userId: {$in: friendsIds}})
+
+    res.status(200).json({ massage: "Item deleted successfully from all users" });
+    }
+    catch (error) {
+        console.error(error)
+        res.status(500).json({ error: error.message || "Failed to delete item" });
+    }
+}
 
 
 
