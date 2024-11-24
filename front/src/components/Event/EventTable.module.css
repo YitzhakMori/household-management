@@ -1,0 +1,38 @@
+.container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .eventList {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .eventItem {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .eventTitle {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .eventDate,
+  .eventDescription {
+    margin: 5px 0;
+  }
+  
+  .button {
+    margin-right: 10px;
+  }
+  

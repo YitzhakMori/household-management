@@ -9,52 +9,16 @@ import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import ResetPassword from './components/ResetPassword/ResetPassword';
 import ShoppingList from './Pages/Shopping/ShoppingList';
 import AdminPage from './components/Admin/Admin';
-import {jwtDecode} from 'jwt-decode'; // ייבוא מתוקן
 import HomeMain from './Pages/HomeMain/HomeMain';
 import AddFriend from './components/AddFriend/AddFriend';
-import EventsPage from "./Pages/Event/EventsPage"
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
+import EventTable from './components/Event/EventTable';
 
-// פונקציה שמבצעת בדיקה אם המשתמש הוא אדמין או לא
-interface DecodedToken {
-  user_id: string;
-  role: string;
-  exp: number; // Timestamp של פקיעת התוקף
-}
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const token = localStorage.getItem('token');
-  console.log('Token from localStorage:', token);
 
-  if (!token) {
-    console.error('No token found, redirecting to login.');
-    return <Navigate to="/" />;
-  }
-
-  try {
-    const decoded: DecodedToken = jwtDecode(token);
-    console.log('Decoded token:', decoded);
-
-    const currentTime = Math.floor(Date.now() / 1000); // זמן נוכחי בשניות
-    if (!decoded.exp || decoded.exp < currentTime) {
-      console.error('Token has expired or is invalid, redirecting to login.');
-      return <Navigate to="/" />;
-    }
-
-    if (decoded.role === 'admin') {
-      console.log('User is admin, displaying admin page.');
-      return children;
-    } else {
-      console.warn('User is not admin, redirecting to Home.');
-      return <Navigate to="/Home" />;
-    }
-  } catch (error) {
-    console.error('Invalid token, redirecting to login.', error);
-    return <Navigate to="/" />;
-  }
-};
 
 function App() {
-  
   return (
     <Router>
       <Routes>
@@ -66,28 +30,15 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/add-friend" element={<AddFriend userId="exampleUserId" />} />
-        <Route path="/events" element={<EventsPage />} />
         <Route path="/admin" element={<AdminPage />} /> 
-
-        <Route 
-          path="/Home" 
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } 
-        />
-   
-    
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute>
-              <AdminPage />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
+        <Route path="/Home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute> } />
+        <Route path="/events" element={
+          <ProtectedRoutee>
+            <EventTable />
+          </ProtectedRoutee>
+        } />
+       </Routes>
     </Router>
   );
 }
