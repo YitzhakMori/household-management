@@ -1,43 +1,48 @@
 import User from "../models/user.model.js";
-import shoppingItemSchemata from "../models/shoppingItemModel.js";
+import shoppingItemSchema from "../models/shoppingItemModel.js";
+import mongoose from "mongoose";
 
 export const addItem = async (req, res) => {
     try {
         const { name, quantity } = req.body;
+        console.log("req.body", req.body)
+
+        const itemGroupId = new mongoose.Types.ObjectId();
+        console.log("itemGroupId", itemGroupId)
+
 
         if (!name || !quantity) {
             return res.status(400).json({ error: "הכנס שם וכמות" });
         }
 
         const userId = req.user.id;
-        const newItem = await shoppingItemSchemata.create({ userId, name, quantity })
+        const newItem = await shoppingItemSchema.create({ 
+            userId,
+            name,
+            quantity,
+            itemGroupId });
+        console.log("newItem", newItem)
 
         const friendEmail = req.user.friends;
-        console.log(friendEmail);  // לו�� ��ו����
+        console.log(friendEmail);  
 
         if (!friendEmail || friendEmail.length === 0) {
             console.log("ffffff");
             return res.status(201).json(newItem);
         }
-        const friends = await User.find({ email: { $in: friendEmail } })
+        const friends = await User.find({ email: { $in: friendEmail }})
 
-        // await Promise.all(friends.map(async (friend) => {
-        //     await shoppingItemSchemata.create({
-        //         userId: friend._id,
-        //         name,
-        //         quantity
-        //     });
-        // }));
         const itemToAdd = friends.map(friend => ({
             userId: friend._id,
             name,
-            quantity
+            quantity,
+            itemGroupId
         }))
         console.log("Items to add for friends:", itemToAdd);  // לוג נוסף
 
 
         if (itemToAdd.length > 0){
-            await shoppingItemSchemata.insertMany(itemToAdd)
+            await shoppingItemSchema.insertMany(itemToAdd)
             console.log("Items added for friends successfully!");  // וידוא אם המוצרים נשמרו
 
         }
@@ -54,42 +59,12 @@ export const addItem = async (req, res) => {
 export const getItems = async (req, res) =>{
     try {
         const userId = req.user.id;
-        const items = await shoppingItemSchemata.find({ userId });
+        const items = await shoppingItemSchema.find({ userId });
         res.json(items);
     } catch (error) {
         res.status(500).json({ error: error.massage || "Failed to get items" })
     }
 }
-
-
-// export const getItems = async (req, res) => {
-//     try {
-//         const userId = req.user.id;
-
-//         // שליפת החברים של המשתמש
-//         const user = await User.findById(userId);
-//         const friendsEmails = user.friends || [];
-//         console.log("Friends emails:", friendsEmails);  // לוג למיילים של החברים
-
-
-//         // שליפת ה-userId של כל החברים
-//         const friends = await User.find({ email: { $in: friendsEmails } });
-//         const friendsIds = friends.map(friend => friend._id);
-//         console.log("Friends IDs:", friendsIds);  // לוג לכל ה־IDs של החברים
-
-
-//         // שליפת המוצרים של המשתמש ושל החברים
-//         const items = await shoppingItemSchemata.find({
-//             userId: { $in: [userId, ...friendsIds] }
-//         });
-//         console.log("Fetched items:", items);  // לוג של המוצרים שנשלפו
-
-
-//         res.status(200).json(items);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message || "Failed to fetch items" });
-//     }
-// };
 
 
 export const deleteItem = async (req, res) => {
@@ -104,14 +79,24 @@ export const deleteItem = async (req, res) => {
     if (!user){
         return res.status(404).json( { massage: "User not found" });
     }
-    const friendsEmails = user.friends;
-    const friends = await User.find( { email: {$in: friendsEmails}}).select("_id");
+
+    const friends = await User.find( {email: {$in: user.friends}})
 
     const friendsIds = friends.map(friend => friend.id)
+    console.log("friendsIds", friendsIds)
 
-    await shoppingItemSchemata.findOneAndDelete( {_id: itemId, userId})
+    const item = await shoppingItemSchema.findOne( {_id: itemId,userId: userId})
+    console.log("item:", item)
+    if (!item) {
+        return res.status(404).json({ massage: "Item not found or access denied" });
+    }
+    const { itemGroupId } = item;
 
-    await shoppingItemSchemata.deleteMany( {_id: itemId, userId: {$in: friendsIds}})
+    await shoppingItemSchema.deleteOne( {_id: itemId,userId: userId})
+
+    await shoppingItemSchema.deleteMany({userId: {$in: friendsIds},itemGroupId})
+    console.log("itemGroupId", itemGroupId)
+    
 
     res.status(200).json({ massage: "Item deleted successfully from all users" });
     }
@@ -121,6 +106,39 @@ export const deleteItem = async (req, res) => {
     }
 }
 
+export const updateItem = async (req, res) =>{
+    const {itemId} = req.params;
+    const { name, quantity } = req.body;
+    const userId = req.user.id;
+    try {
+        const item = await shoppingItemSchema.findOne({_id: itemId, userId: userId})
+        if (!item) {
+            return res.status (404).json({massage: "item not found" });
+        }
+        item.name = name;
+        item.quantity = quantity;
+        await item.save();
+
+        const {itemGroupId} = item
+
+        const user = await User.findById(userId);
+        const friendEmails = user.friends;
+
+        if (friendEmails ){
+            const friends = await User.find({ email: {$in: friendEmails}})
+            const friendIds = friends.map(friend => friend._id)
+
+            await shoppingItemSchema.updateMany(
+                {userId: {$in: friendIds},itemGroupId},
+                {name, quantity}
+            )
+        }
+        res.status(200).json({massage: "item updated successfully"});
+    }catch (error) {
+        console.error(error)
+        res.status(500).json({error: error.message || "Failed to update item" });
+    }
+}
 
 
 
