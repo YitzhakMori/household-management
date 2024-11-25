@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import EventForm from '../EventForm';
+import EventForm from '../EventForm/EventForm';
 import { Event } from '../../../interfaces/Event';
 import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../../api/eventsApi';
 import styles from './EventTable.module.css';
