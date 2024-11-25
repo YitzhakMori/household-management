@@ -13,7 +13,7 @@ import HomeMain from './Pages/HomeMain/HomeMain';
 import AddFriend from './components/AddFriend/AddFriend';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
-import EventTable from './components/Event/EventTable';
+import EventTable from './components/Event/EventTable/EventTable';
 
 
 
