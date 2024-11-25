@@ -32,7 +32,6 @@ export const addEvent = async (req, res) => {
     });
 
     const friendEmails = req.user.friends;
-    console.log(friendEmails);
 
     if (!friendEmails || friendEmails.length === 0) {
       return res.status(201).json(newEvent);

@@ -1,8 +1,6 @@
 .formContainer {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
   }
   
   .formGroup {
@@ -10,7 +8,6 @@
   }
   
   .label {
-    display: block;
     margin-bottom: 5px;
     font-weight: bold;
   }
@@ -19,15 +16,16 @@
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
   }
   
   .button {
     padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #007bff;
+    background-color: #28a745;
     color: white;
-    margin-right: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
   }
   
