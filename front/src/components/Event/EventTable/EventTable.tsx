@@ -39,6 +39,7 @@ const EventTable = () => {
       setEvents(events.map((e) => (e._id === event._id ? updatedEvent : e)));
       setSelectedEvent(undefined);
       setIsModalOpen(false);
+      
     } catch (error) {
       console.error('Error updating event:', error);
     }
@@ -106,7 +107,7 @@ const EventTable = () => {
               {filteredEvents.map((event) => (
                 <tr key={event._id}>
                   <td>
-                    <button className={styles.button} onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}>עדכון</button>
+                    <button className={styles.button} onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}>עריכה</button>
                     <button className={styles.button} onClick={() => handleDeleteEvent(event._id || '')}>מחיקה</button>
                   </td>
                   <td>{event.date}</td>
