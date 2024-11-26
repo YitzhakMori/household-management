@@ -7,13 +7,15 @@ import SignUpPage from './components/SignUpPage/SignUpPage';
 import VerifyEmail from './components/VerifyEmail/VerifyEmail';
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import ResetPassword from './components/ResetPassword/ResetPassword';
-import ShoppingList from './Pages/Shopping/ShoppingList';
 import AdminPage from './components/Admin/Admin';
 import HomeMain from './Pages/HomeMain/HomeMain';
 import AddFriend from './components/AddFriend/AddFriend';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
-import EventTable from './components/Event/EventTable/EventTable';
+
+import EventTable from './components/Event/EventTable';
+import ShoppingList from './components/ShoppingList/ShoppingList';
+
 
 
 
@@ -33,6 +35,8 @@ function App() {
         <Route path="/admin" element={<AdminPage />} /> 
         <Route path="/Home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute> } />
+        <Route path="/shopping-list" element={<ProtectedRoutee><ShoppingList /></ProtectedRoutee>} />
+
         <Route path="/events" element={
           <ProtectedRoutee>
             <EventTable />

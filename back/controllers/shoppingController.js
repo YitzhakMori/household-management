@@ -106,39 +106,46 @@ export const deleteItem = async (req, res) => {
     }
 }
 
-export const updateItem = async (req, res) =>{
-    const {itemId} = req.params;
+export const updateItem = async (req, res) => {
+    const { itemId } = req.params;
     const { name, quantity } = req.body;
     const userId = req.user.id;
+
     try {
-        const item = await shoppingItemSchema.findOne({_id: itemId, userId: userId})
+        const item = await shoppingItemSchema.findOne({ _id: itemId, userId: userId });
         if (!item) {
-            return res.status (404).json({massage: "item not found" });
+            return res.status(404).json({ message: "item not found" });
         }
+
+        // עדכון הפריט
         item.name = name;
         item.quantity = quantity;
         await item.save();
 
-        const {itemGroupId} = item
+        const { itemGroupId } = item;
 
+        // עדכון אצל חברים
         const user = await User.findById(userId);
         const friendEmails = user.friends;
 
-        if (friendEmails ){
-            const friends = await User.find({ email: {$in: friendEmails}})
-            const friendIds = friends.map(friend => friend._id)
+        if (friendEmails) {
+            const friends = await User.find({ email: { $in: friendEmails } });
+            const friendIds = friends.map(friend => friend._id);
 
             await shoppingItemSchema.updateMany(
-                {userId: {$in: friendIds},itemGroupId},
-                {name, quantity}
-            )
+                { userId: { $in: friendIds }, itemGroupId },
+                { name, quantity }
+            );
         }
-        res.status(200).json({massage: "item updated successfully"});
-    }catch (error) {
-        console.error(error)
-        res.status(500).json({error: error.message || "Failed to update item" });
+
+        // החזרת הפריט המעודכן בתגובה
+        res.status(200).json(item);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message || "Failed to update item" });
     }
-}
+};
+
 
 
 

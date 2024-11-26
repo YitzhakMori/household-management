@@ -4,6 +4,7 @@ import AddFriend from '../../components/AddFriend/AddFriend';
 import { getUserIdFromToken } from '../../utils/utils';
 import NavHome from "../../nav/NavHome";
 import css from './Home.module.css';
+import ShoppingList from '../../components/ShoppingList/ShoppingList';
 
 const Home: React.FC = () => {
     const [userId, setUserId] = useState<string | null>(null);
@@ -20,7 +21,7 @@ const Home: React.FC = () => {
             <NavHome />
             <h1>ניהול משק בית</h1>
             <ul>
-                <li onClick={() => navigate('/shopping')}>קניות</li>
+                <li onClick={() => navigate('/shopping-list')}>קניות</li>
                 <li>משימות</li>
                 <li onClick={() => navigate('/events')}>אירועים</li>
                 <li>הוצאות והכנסות</li>
