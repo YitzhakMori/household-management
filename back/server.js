@@ -51,8 +51,15 @@ const createAdmin = async () => {
 // הפעלת הפונקציה כשאתה מפעיל את המערכת
 createAdmin();
 
+const corsOptions = {
+    origin: 'http://localhost:3000', // הכתובת של הקליינט
+    credentials: true, // מאפשר שליחת cookies, headers או credentials אחרים
+};
 
-app.use(cors());
+app.use(cors(corsOptions));
+
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/House", HouseRoutes);

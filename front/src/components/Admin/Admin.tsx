@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchAllUsers, deleteUserById, searchUsers } from "../../api/adminAPI";
+import { fetchAllUsers, deleteUserById, searchUsers } from "../../api/adminAPI"
 
 interface User {
   _id: string;

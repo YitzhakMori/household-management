@@ -43,7 +43,7 @@ const LoginPage = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('data', JSON.stringify(data.user));
 
-      console.log('Token saved:', data.token);
+      // console.log('Token saved:', data.token);
 
       // ניתוב לפי תפקיד המשתמש
       if (data.user.role === 'admin') {
