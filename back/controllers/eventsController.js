@@ -32,7 +32,6 @@ export const addEvent = async (req, res) => {
     });
 
     const friendEmails = req.user.friends;
-    console.log(friendEmails);
 
     if (!friendEmails || friendEmails.length === 0) {
       return res.status(201).json(newEvent);
@@ -125,8 +124,8 @@ export const updateEvent = async (req, res) => {
             );
         }
 
-        res.status(200).json({ message: 'Event updated successfully' });
-    } catch (error) {
+        res.status(200).json(event);
+          } catch (error) {
         console.error('Error updating event:', error);
         res.status(500).json({ message: 'Error updating event' });
     }
