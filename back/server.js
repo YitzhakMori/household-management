@@ -10,6 +10,7 @@ import User from './models/user.model.js'; // הייבוא של מודל המש�
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
 import event from "./routes/events.js";
 import auth from "./middleware/auth.js";
+import taskRoutes from "./routes/taskRoutes.js";
 
 
 
@@ -66,6 +67,7 @@ app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);
 app.use('/api/events',auth, event);
+app.use('/api/task', taskRoutes);
 
 app.listen(PORT, () => {
     contactDb();

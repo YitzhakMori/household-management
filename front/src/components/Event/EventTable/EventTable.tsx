@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import EventForm from '../EventForm/EventForm';
 import { Event } from '../../../interfaces/Event';
 import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../../api/eventsApi';
-import styles from './EventTable.module.css';
+import styles from './EventTable.module.css'
 
 const EventTable = () => {
   const [events, setEvents] = useState<Event[]>([]);
