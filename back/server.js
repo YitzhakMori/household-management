@@ -9,7 +9,7 @@ import shoppingRoutes from "./routes/shoppingRoutes.js";
 import User from './models/user.model.js'; // הייבוא של מודל המשתמש
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
 import event from "./routes/events.js";
-import auth from "./middleware/auth.js";
+import transactionsRoutes from "./routes/transactionsRoutes.js"
 
 
 
@@ -65,7 +65,8 @@ app.use(cookieParser());
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);
-app.use('/api/events',auth, event);
+app.use('/api/events',event);
+app.use('/api/transaction',transactionsRoutes);
 
 app.listen(PORT, () => {
     contactDb();
