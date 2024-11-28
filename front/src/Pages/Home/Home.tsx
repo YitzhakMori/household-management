@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddFriend from '../../components/AddFriend/AddFriend';
 import { getUserIdFromToken } from '../../utils/utils';
-import NavHome from "../../nav/NavHome";
 import css from './Home.module.css';
-import ShoppingList from '../../components/ShoppingList/ShoppingList';
-
+import NavBar from '../../nav/Navbar';
 const Home: React.FC = () => {
     const [userId, setUserId] = useState<string | null>(null);
     const [showAddFriendModal, setShowAddFriendModal] = useState(false);
     const navigate = useNavigate();
-
+    const buttons = [
+        { path: '/add-friend', label: 'הוספת חבר' },
+        
+      ];
     useEffect(() => {
         const userIdFromToken = getUserIdFromToken();
         setUserId(userIdFromToken);
@@ -18,7 +19,7 @@ const Home: React.FC = () => {
 
     return (
         <div className={css.homePage}>
-            <NavHome />
+            <NavBar buttons={buttons} />
             <h1>ניהול משק בית</h1>
             <ul>
                 <li onClick={() => navigate('/shopping-list')}>קניות</li>

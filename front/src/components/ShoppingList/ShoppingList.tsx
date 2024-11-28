@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {fetchShoppingItems,addShoppingItem,updateShoppingItem,deleteShoppingItem} from '../../api/shoppingApi';
 import styles from './ShoppingList.module.css';
-
+import NavBar from '../../nav/Navbar';
 // הגדרת הטייפ למוצר
 interface ShoppingItem {
     _id: string;
@@ -16,7 +16,10 @@ const ShoppingList: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-
+    const buttons = [
+        { path: '/Home', label: 'עמוד הבית' },
+        { path: '/events', label: 'אירועים' }
+      ];
     const loadItems = async () => {
         try {
             setLoading(true);
@@ -97,6 +100,7 @@ const ShoppingList: React.FC = () => {
 
     return (
         <div className={styles.container}>
+            <NavBar buttons={buttons} />
             <h1 className={styles.title}>רשימת קניות</h1>
             {loading && <p className={styles.loading}>טוען...</p>}
             {error && <p className={styles.error}>{error}</p>}
