@@ -2,14 +2,19 @@ import React, { useEffect, useState } from 'react';
 import EventForm from '../EventForm/EventForm';
 import { Event } from '../../../interfaces/Event';
 import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../../api/eventsApi';
-import styles from './EventTable.module.css'
+
+import styles from './EventTable.module.css';
+import NavBar from '../../../nav/Navbar';
 
 const EventTable = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const buttons = [
+    { path: '/Home', label: 'עמוד הבית' },
+    { path: '/shopping-list', label: 'קניות' }
+  ];
   useEffect(() => {
     loadEvents();
   }, []);
@@ -80,7 +85,9 @@ const EventTable = () => {
   );
 
   return (
+   
     <div className={styles.container}>
+       <NavBar buttons={buttons} />
       <h1 className={styles.heading}>רשימת אירועים</h1>
       <div className={styles.controls}>
         <input

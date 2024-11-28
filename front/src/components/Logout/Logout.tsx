@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import AddFriend from '../components/AddFriend/AddFriend';
-import css from './NavHome.module.css';
+import { useNavigate } from 'react-router-dom';
 
-const NavAfterLogin: React.FC = () => {
+interface LogoutProps {
+  className?: string;
+}
+
+const Logout: React.FC<LogoutProps> = ({ className }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -18,7 +20,7 @@ const NavAfterLogin: React.FC = () => {
       if (response.ok) {
         console.log('Logged out successfully');
         localStorage.removeItem('token');
-        navigate('/'); // נניח שיש לך עמוד התחברות
+        navigate('/'); // ניווט לדף הבית אחרי יציאה
       } else {
         console.error('Failed to log out');
       }
@@ -28,17 +30,10 @@ const NavAfterLogin: React.FC = () => {
   };
 
   return (
-    <nav className={css.nav}>
-      <ul>
-        <li>
-          <Link to="/add-friend">הוספת חבר</Link>
-        </li>
-        <li>
-          <button onClick={handleLogout}>התנתקות</button>
-        </li>
-      </ul>
-    </nav>
+    <button onClick={handleLogout} className={className}>
+      התנתקות
+    </button>
   );
 };
 
-export default NavAfterLogin;
+export default Logout;
