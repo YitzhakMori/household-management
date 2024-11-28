@@ -60,6 +60,7 @@ export const getItems = async (req, res) =>{
     try {
         const userId = req.user.id;
         const items = await shoppingItemSchema.find({ userId });
+        console.log("items:", items);
         res.json(items);
     } catch (error) {
         res.status(500).json({ error: error.massage || "Failed to get items" })
@@ -145,7 +146,6 @@ export const updateItem = async (req, res) => {
         res.status(500).json({ error: error.message || "Failed to update item" });
     }
 };
-
 
 
 
