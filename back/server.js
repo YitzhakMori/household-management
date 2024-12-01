@@ -8,12 +8,9 @@ import adminRoutes from "./routes/adminRoutes.js";
 import shoppingRoutes from "./routes/shoppingRoutes.js";
 import User from './models/user.model.js'; // הייבוא של מודל המשתמש
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
-import event from "./routes/events.js";
-
+import event from "./routes/events.js"
 import transactionsRoutes from "./routes/transactionsRoutes.js"
-
-
-
+import taskRoutes from "./routes/taskRoutes.js"
 
 dotenv.config();
 
@@ -59,17 +56,15 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-
-
 app.use(express.json());
 app.use(cookieParser());
+
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);
-
 app.use('/api/events',event);
 app.use('/api/transaction',transactionsRoutes);
+app.use('/api/task',taskRoutes)
 
 
 app.listen(PORT, () => {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import styles from './EventForm.module.css';
+import React, { useState, useEffect } from "react";
+import styles from "./EventForm.module.css";
 
 interface EventFormProps {
   onAddEvent: (event: Event) => Promise<void>;
@@ -14,22 +14,28 @@ interface Event {
   description: string;
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event }) => {
+const EventForm: React.FC<EventFormProps> = ({
+  onAddEvent,
+  onUpdateEvent,
+  event,
+}) => {
   const [formState, setFormState] = useState<Event>({
-    title: '',
-    date: '',
-    description: ''
+    title: "",
+    date: "",
+    description: "",
   });
 
   useEffect(() => {
     if (event) {
       setFormState(event);
     } else {
-      setFormState({ title: '', date: '', description: '' });
+      setFormState({ title: "", date: "", description: "" });
     }
   }, [event]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormState({ ...formState, [name]: value });
   };
@@ -46,7 +52,9 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
   return (
     <form className={styles.formContainer} onSubmit={handleSubmit}>
       <div className={styles.formGroup}>
-        <label className={styles.label} htmlFor="title">כותרת</label>
+        <label className={styles.label} htmlFor="title">
+          כותרת
+        </label>
         <input
           className={styles.input}
           type="text"
@@ -57,7 +65,9 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
         />
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label} htmlFor="date">תאריך</label>
+        <label className={styles.label} htmlFor="date">
+          תאריך
+        </label>
         <input
           className={styles.input}
           type="date"
@@ -68,7 +78,9 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
         />
       </div>
       <div className={styles.formGroup}>
-        <label className={styles.label} htmlFor="description">תאור</label>
+        <label className={styles.label} htmlFor="description">
+          תאור
+        </label>
         <textarea
           className={styles.input}
           id="description"
@@ -77,7 +89,9 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
           onChange={handleChange}
         />
       </div>
-      <button className={styles.button} type="submit">{formState._id ? 'עדכון' : 'הוספה'}</button>
+      <button className={styles.button} type="submit">
+        {formState._id ? "עדכון" : "הוספה"}
+      </button>
     </form>
   );
 };

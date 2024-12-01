@@ -12,6 +12,10 @@ export const addTask = async (req, res) => {
             return res.status(400).json({error: "שדה הכותרת הוא חובה"});
         }
         const userId = req.user.id;
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: "User authentication failed" });
+        }
+        
         
         const newTask = await Task.create({
             title,
@@ -73,11 +77,12 @@ export const updateTask = async  (req, res) => {
         if (!task){
             return res.status(404).json({message: "Task not found"})
         }
-        task.title = title;
-        task.description = description;
-        task.dueDate = dueDate;
-        task.status = status;
-        task.assignee = assignee;
+        task.title = title || task.title;
+        task.description = description || task.description;
+        task.dueDate = dueDate || task.dueDate;
+        task.status = status || task.status;
+        task.assignee = assignee || task.assignee;
+        
         await task.save();
         
         const {taskGroupId} = task;
