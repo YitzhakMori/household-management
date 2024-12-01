@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
 import ShoppingList from './components/ShoppingList/ShoppingList';
 import EventTable from './components/Event/EventTable/EventTable';
+import TaskList from './components/Task/TaskList';
 
 
 
@@ -35,6 +36,8 @@ function App() {
         <Route path="/Home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute> } />
         <Route path="/shopping-list" element={<ProtectedRoutee><ShoppingList /></ProtectedRoutee>} />
+        <Route path="/tasks" element={<ProtectedRoutee><TaskList /></ProtectedRoutee>} />
+
 
         <Route path="/events" element={
           <ProtectedRoutee>

@@ -23,7 +23,7 @@ const Home: React.FC = () => {
             <h1>ניהול משק בית</h1>
             <ul>
                 <li onClick={() => navigate('/shopping-list')}>קניות</li>
-                <li>משימות</li>
+                <li onClick={() => navigate('/tasks')}>משימות</li>
                 <li onClick={() => navigate('/events')}>אירועים</li>
                 <li>הוצאות והכנסות</li>
             </ul>

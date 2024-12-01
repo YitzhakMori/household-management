@@ -4,7 +4,7 @@ const taskSchema = new mongoose.Schema(
     {
         userId: {
             type: mongoose.Schema.ObjectId,
-             ref: "users",
+             ref: "User",
              required: true
             },
 
@@ -14,11 +14,15 @@ const taskSchema = new mongoose.Schema(
         },
         description: {
             type: String,
-            required: false
+            // required: false
+            default: "", // שדה אופציונלי
+
         },
         dueDate: {
             type: Date,
-            required: false
+            // required: false
+            default: null,
+
         },
         status: {
             type: String,
@@ -28,7 +32,8 @@ const taskSchema = new mongoose.Schema(
         assignee: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User', // הפניה לטבלת המשתמשים
-            required: false,
+            // required: false,
+            default: null
         },
         taskGroupId: {
             type: mongoose.Schema.Types.ObjectId, 
