@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאו�
 import event from "./routes/events.js"
 import transactionsRoutes from "./routes/transactionsRoutes.js"
 import taskRoutes from "./routes/taskRoutes.js"
+import friendRequestRoutes from './routes/friendRequestRoutes.js'
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use('/api/friends', friendRequestRoutes);
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);

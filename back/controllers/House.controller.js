@@ -200,43 +200,45 @@ export const checkAuth = async (req, res) => {
 };
 
 
-export const addFriend = async (req, res) => {
+export const addFriend = async (userId, friendEmail) => {
     try {
-        const userId = req.user.id;
-    
-        const  {friendEmail}  = req.body;
-        const userEmail = req.user.email
-
-        if (friendEmail === userEmail) {
-            return res.status(400).json({ message: "לא ניתן להוסיף את עצמך כחבר" });
-        }
-        
-
         if (!friendEmail) {
-            return res.status(400).json({ message: "יש להזין מייל של חבר" });
-        }
-        const friendUser = await User.findOne({ email: friendEmail });
-        if (!friendUser) {
-            return res.status(404).json({ message: "המשתמש המבוקש לא נמצא" });
+            return { success: false, message: "יש להזין מייל של חבר" };
         }
 
         const user = await User.findById(userId);
+        if (!user) {
+            return { success: false, message: "משתמש לא נמצא" };
+        }
+
+        if (user.email === friendEmail) {
+            return { success: false, message: "לא ניתן להוסיף את עצמך כחבר" };
+        }
+
+        const friendUser = await User.findOne({ email: friendEmail });
+        if (!friendUser) {
+            return { success: false, message: "המשתמש המבוקש לא נמצא" };
+        }
+
         if (user.friends.includes(friendEmail)) {
-            return res.status(400).json({ message: "החבר כבר קיים ברשימה",friend:  friendUser });
+            return { success: false, message: "החבר כבר קיים ברשימה" };
         }
 
         user.friends.push(friendEmail);
         await user.save();
+        console.log("🚀 ~ user saved successfully:", user);
 
-        friendUser.friends.push(userEmail);
+        friendUser.friends.push(user.email);
         await friendUser.save();
+        console.log("🚀 ~ friendUser saved successfully:", friendUser);
 
-        res.status(200).json({ message: "החבר נוסף בהצלחה",friend:  friendUser}); ;
+        return { success: true, message: "החבר נוסף בהצלחה", friend: friendUser };
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "שגיאה בשרת" });
+        return { success: false, message: "שגיאה בשרת" };
     }
 };
+
 
 export const removeFriend = async (req,res)=> {
     try{
