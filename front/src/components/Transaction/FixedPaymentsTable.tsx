@@ -1,54 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import styles from './FixedPaymentsTable.module.css';
 import { fetchFixedPayments, addFixedPayment, editFixedPayment, deleteFixedPayment } from '../../api/Fixed';
 import { FixedPayment } from '../../interfaces/FixedModel';
 
 const FixedPaymentsTable: React.FC = () => {
   const [fixedPayments, setFixedPayments] = useState<FixedPayment[]>([]);
-  const [newFixedPayment, setNewFixedPayment] = useState<Omit<FixedPayment, '_id'>>({ amount: 0, description: '', date: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFixedPayment, setEditingFixedPayment] = useState<FixedPayment | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFixedPaymentsData();
+    loadFixedPayments();
   }, []);
 
-  const fetchFixedPaymentsData = async () => {
+  const loadFixedPayments = async () => {
     try {
+      setLoading(true);
       const data = await fetchFixedPayments();
       setFixedPayments(data);
     } catch (error) {
-      console.error('Error fetching fixed payments:', error);
+      setError('שגיאה בטעינת התשלומים הקבועים');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddFixedPayment = async () => {
-    try {
-      await addFixedPayment(newFixedPayment);
-      fetchFixedPaymentsData();
-      setNewFixedPayment({ amount: 0, description: '', date: '' });
-    } catch (error) {
-      console.error('Error adding fixed payment:', error);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFixedPayment) return;
 
-  const handleEditFixedPayment = async (id: string) => {
     try {
-      if (editingFixedPayment) {
+      setLoading(true);
+      if (editingFixedPayment._id) {
         await editFixedPayment(editingFixedPayment);
-        fetchFixedPaymentsData();
-        setEditingFixedPayment(null);
+      } else {
+        await addFixedPayment(editingFixedPayment);
       }
+      await loadFixedPayments();
+      setIsModalOpen(false);
+      setEditingFixedPayment(null);
     } catch (error) {
-      console.error('Error editing fixed payment:', error);
+      setError('שגיאה בשמירת התשלום הקבוע');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteFixedPayment = async (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('האם אתה בטוח שברצונך למחוק תשלום קבוע זה?')) return;
+    
     try {
+      setLoading(true);
       await deleteFixedPayment(id);
-      fetchFixedPaymentsData();
+      await loadFixedPayments();
     } catch (error) {
-      console.error('Error deleting fixed payment:', error);
+      setError('שגיאה במחיקת התשלום הקבוע');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,75 +64,175 @@ const FixedPaymentsTable: React.FC = () => {
     return !isNaN(new Date(date).getTime());
   };
 
-  return (
-    <div className={styles['fixed-payments-container']}>
-      <h2>Fixed Payments</h2>
-      <button onClick={() => setEditingFixedPayment({ _id: '', amount: 0, description: '', date: '' })}>
-        Add Fixed Payment
-      </button>
-      <table>
-        <thead>
-          <tr>
-            <th>Amount</th>
-            <th>Description</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fixedPayments.map(fixedPayment => (
-            <tr key={fixedPayment._id}>
-              <td>{fixedPayment.amount}</td>
-              <td>{fixedPayment.description}</td>
-              <td>{isValidDate(fixedPayment.date) ? new Date(fixedPayment.date).toLocaleDateString() : 'Invalid date'}</td>
-              <td className={styles.actions}>
-                <button onClick={() => setEditingFixedPayment(fixedPayment)}>Edit</button>
-                <button onClick={() => handleDeleteFixedPayment(fixedPayment._id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  const getTotalFixedPayments = () => 
+    fixedPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
-      {editingFixedPayment && (
-        <div>
-          <h3>{editingFixedPayment._id ? 'Edit Fixed Payment' : 'Add Fixed Payment'}</h3>
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              if (editingFixedPayment._id) {
-                handleEditFixedPayment(editingFixedPayment._id);
-              } else {
-                handleAddFixedPayment();
-              }
+  return (
+    <div dir="rtl" className="min-h-screen bg-gray-50 p-4">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 mb-6">
+        <div className="flex justify-between items-center">
+          <div className="text-white">
+            <h1 className="text-2xl font-bold mb-1">תשלומים קבועים</h1>
+            <p className="text-blue-100">סה"כ תשלומים חודשיים: ₪{getTotalFixedPayments().toLocaleString()}</p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingFixedPayment({ _id: '', amount: 0, description: '', date: '' });
+              setIsModalOpen(true);
             }}
+            className="bg-white text-blue-600 px-4 py-2 rounded-lg 
+              hover:bg-blue-50 transition-all flex items-center gap-2"
           >
-            <label>
-              Amount:
-              <input
-                type="number"
-                value={editingFixedPayment.amount}
-                onChange={e => setEditingFixedPayment({ ...editingFixedPayment, amount: +e.target.value })}
-              />
-            </label>
-            <label>
-              Description:
-              <input
-                type="text"
-                value={editingFixedPayment.description}
-                onChange={e => setEditingFixedPayment({ ...editingFixedPayment, description: e.target.value })}
-              />
-            </label>
-            <label>
-              Date:
-              <input
-                type="date"
-                value={isValidDate(editingFixedPayment.date) ? new Date(editingFixedPayment.date).toISOString().split('T')[0] : ''}
-                onChange={e => setEditingFixedPayment({ ...editingFixedPayment, date: e.target.value })}
-              />
-            </label>
-            <button type="submit">{editingFixedPayment._id ? 'Update' : 'Add'}</button>
-          </form>
+            <span className="text-xl">⏰</span>
+            <span>הוספת תשלום קבוע</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Status Messages */}
+      {loading && (
+        <div className="text-center bg-white rounded-lg shadow p-4 mb-6">
+          <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <span className="mr-2">טוען...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border-r-4 border-red-500 p-4 mb-6 rounded-lg">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">❌</div>
+            <div className="mr-3">{error}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Fixed Payments Table */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">סכום</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תיאור</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תאריך</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {fixedPayments.map((payment) => (
+                <tr key={payment._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="font-medium text-red-600">
+                      ₪{payment.amount.toLocaleString()}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{payment.description}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {isValidDate(payment.date) 
+                      ? new Date(payment.date).toLocaleDateString('he-IL') 
+                      : 'תאריך לא תקין'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingFixedPayment(payment);
+                          setIsModalOpen(true);
+                        }}
+                        className="text-yellow-600 hover:text-yellow-900 text-xl"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => handleDelete(payment._id)}
+                        className="text-red-600 hover:text-red-900 text-xl"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">
+                  {editingFixedPayment?._id ? 'עריכת תשלום קבוע' : 'תשלום קבוע חדש'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingFixedPayment(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ❌
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">סכום</label>
+                  <input
+                    type="number"
+                    value={editingFixedPayment?.amount}
+                    onChange={e => setEditingFixedPayment(prev => prev ? {...prev, amount: +e.target.value} : prev)}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">תיאור</label>
+                  <input
+                    type="text"
+                    value={editingFixedPayment?.description}
+                    onChange={e => setEditingFixedPayment(prev => prev ? {...prev, description: e.target.value} : prev)}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">תאריך חיוב</label>
+                  <input
+                    type="date"
+                    value={editingFixedPayment?.date ? new Date(editingFixedPayment.date).toISOString().split('T')[0] : ''}
+                    onChange={e => setEditingFixedPayment(prev => prev ? {...prev, date: e.target.value} : prev)}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg
+                      hover:bg-blue-700 transition-colors"
+                  >
+                    {editingFixedPayment?._id ? 'עדכן' : 'הוסף'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setEditingFixedPayment(null);
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg
+                      hover:bg-gray-200 transition-colors"
+                  >
+                    ביטול
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>

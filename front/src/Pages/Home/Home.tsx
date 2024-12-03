@@ -46,7 +46,7 @@ const Home: React.FC = () => {
       stats: { count: '2', text: 'אירועים קרובים' }
     },
     { 
-      path: '', 
+      path: '/dashboard', 
       label: 'הוצאות והכנסות', 
       icon: '💰', 
       color: 'bg-orange-100 hover:bg-orange-200 text-orange-800',
