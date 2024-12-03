@@ -10,50 +10,51 @@ import { error } from "console";
 
 
 
-export const signUp = async (req, res) => {
-    const { name, email, password } = req.body
-    try {
-        if (!name || !email || !password) {
-            return res.status(400).json({ success: false, message: "All fields are required" })
-        }
+export const signup = async (req, res) => {
+	const { email, password, name } = req.body;
 
-        const userAlreadyExist = await User.findOne({ email })
-        if (userAlreadyExist) {
-            return res.status(400).json({ success: false, message: "User already exist" })
-        }
+	try {
+		if (!email || !password || !name) {
+			throw new Error("All fields are required");
+		}
 
-        const hashedPassword = await bcryptjs.hash(password, 10)
-        const verificationToken = Math.floor(100000 + Math.random() * 900000).toString()
-        const user = new User({
-            email,
-            password: hashedPassword,
-            name,
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000
-        })
+		const userAlreadyExists = await User.findOne({ email });
+		console.log("userAlreadyExists", userAlreadyExists);
 
-        await user.save()
-        const token = generateTokenAndSetCookie(res, user._id)
-        // await sendVerificationEmail(user.email, verificationToken)
+		if (userAlreadyExists) {
+			return res.status(400).json({ success: false, message: "User already exists" });
+		}
 
+		const hashedPassword = await bcryptjs.hash(password, 10);
+		const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
+		const user = new User({
+			email,
+			password: hashedPassword,
+			name,
+			verificationToken,
+			verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+		});
 
-        return res.status(201).json({
-            success: true,
-            message: "User created successfully",
-            user: {
-                ...user.toObject(),
-                password: undefined
-            },
-            token: token,
-        })
-    }
+		await user.save();
 
-    catch (error) {
-        console.error("error in signUp ", error);
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
+		// jwt
+		generateTokenAndSetCookie(res, user._id);
+
+		await sendVerificationEmail(user.email, verificationToken);
+
+		res.status(201).json({
+			success: true,
+			message: "User created successfully",
+			user: {
+				...user._doc,
+				password: undefined,
+			},
+		});
+	} catch (error) {
+		res.status(400).json({ success: false, message: error.message });
+	}
+};
 
 
 export const verifyEmail = async (req, res) => {
