@@ -25,7 +25,8 @@ const Home: React.FC = () => {
                 <li onClick={() => navigate('/shopping-list')}>קניות</li>
                 <li>משימות</li>
                 <li onClick={() => navigate('/events')}>אירועים</li>
-                <li>הוצאות והכנסות</li>
+                <li onClick={() => navigate('/Dashboard')}>הוצאות והכנסות</li>
+                
             </ul>
             {showAddFriendModal && (
                 <div className={css.modal}>
