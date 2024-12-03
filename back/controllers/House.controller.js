@@ -5,7 +5,7 @@ import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js
 import { sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/emails.js";
 import { sendWelcomeEmail } from "../mailtrap/emails.js";
 import { sendPasswordResetEmail } from "../mailtrap/emails.js";
-import { error } from "console";
+
 
 
 

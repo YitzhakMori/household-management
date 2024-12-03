@@ -13,6 +13,7 @@ import AddFriend from './components/AddFriend/AddFriend';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
 import ShoppingList from './components/ShoppingList/ShoppingList';
+import Dashboard from './components/Transaction/Dashboard';
 
 import EventTable from './components/Event/EventForm/EventTable';
 import TaskList from './components/Task/TaskList';
@@ -42,6 +43,7 @@ function App() {
 
         <Route path="/tasks" element={<ProtectedRoutee><TaskList /></ProtectedRoutee>} />
         <Route path="/friend-requests" element={<ProtectedRoutee><FriendRequests /></ProtectedRoutee>} />
+        <Route path="/dashboard" element={<Dashboard /> } />
 
 
 

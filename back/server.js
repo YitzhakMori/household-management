@@ -10,6 +10,8 @@ import User from './models/user.model.js'; // הייבוא של מודל המש�
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
 
 import event from "./routes/events.js"
+import savingsRoutes from "./routes/savingsRoutes.js"
+import fixedPaymentsRoutes from "./routes/fixedPaymentsRoutes.js"
 
 import transactionsRoutes from "./routes/transactionsRoutes.js"
 import taskRoutes from "./routes/taskRoutes.js"
@@ -71,6 +73,8 @@ app.use('/api/shopping', shoppingRoutes);
 
 app.use('/api/events',event);
 app.use('/api/transaction',transactionsRoutes);
+app.use('/api/savings', savingsRoutes);
+app.use('/api/fixedPayments', fixedPaymentsRoutes);
 app.use('/api/task',taskRoutes)
 
 
