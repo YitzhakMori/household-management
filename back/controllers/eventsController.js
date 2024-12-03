@@ -4,14 +4,14 @@ import eventSchema from "../models/Event.js"
 import mongoose from 'mongoose';
 
 
-export const getAllEvents = async (req, res) =>{
-    try {
-        const userId = req.user.id;
-        const items = await eventSchema.find({ userId });
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ error: error.massage || "Failed to get items" })
-    }
+export const getAllEvents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const items = await eventSchema.find({ userId });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.massage || "Failed to get items" })
+  }
 }
 
 export const addEvent = async (req, res) => {
@@ -94,39 +94,39 @@ export const deleteEvent = async (req, res) => {
 };
 
 export const updateEvent = async (req, res) => {
-    const { id } = req.params;
-    const { title, date, description } = req.body;
+  const { id } = req.params;
+  const { title, date, description } = req.body;
 
-    try {
-        // מציאת האירוע עבור המשתמש הראשי
-        const event = await Event.findOne({ _id: id, userId: req.user.id });
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found or access denied' });
-        }
-
-        // עדכון האירוע עבור המשתמש הראשי
-        event.title = title;
-        event.date = date;
-        event.description = description;
-        await event.save();
-
-        // מציאת החברים של המשתמש הראשי
-        const user = await User.findById(req.user.id);
-        const friendEmails = user.friends;
-        if (friendEmails && friendEmails.length > 0) {
-            const friends = await User.find({ email: { $in: friendEmails } });
-            const friendIds = friends.map(friend => friend._id);
-
-            // עדכון האירועים עבור החברים של המשתמש הראשי לפי eventGroupId
-            await Event.updateMany(
-                { userId: { $in: friendIds }, eventGroupId: event.eventGroupId },
-                { title, date, description }
-            );
-        }
-
-        res.status(200).json(event);
-          } catch (error) {
-        console.error('Error updating event:', error);
-        res.status(500).json({ message: 'Error updating event' });
+  try {
+    // מציאת האירוע עבור המשתמש הראשי
+    const event = await Event.findOne({ _id: id, userId: req.user.id });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found or access denied' });
     }
+
+    // עדכון האירוע עבור המשתמש הראשי
+    event.title = title;
+    event.date = date;
+    event.description = description;
+    await event.save();
+
+    // מציאת החברים של המשתמש הראשי
+    const user = await User.findById(req.user.id);
+    const friendEmails = user.friends;
+    if (friendEmails && friendEmails.length > 0) {
+      const friends = await User.find({ email: { $in: friendEmails } });
+      const friendIds = friends.map(friend => friend._id);
+
+      // עדכון האירועים עבור החברים של המשתמש הראשי לפי eventGroupId
+      await Event.updateMany(
+        { userId: { $in: friendIds }, eventGroupId: event.eventGroupId },
+        { title, date, description }
+      );
+    }
+
+    res.status(200).json(event);
+  } catch (error) {
+    console.error('Error updating event:', error);
+    res.status(500).json({ message: 'Error updating event' });
+  }
 };

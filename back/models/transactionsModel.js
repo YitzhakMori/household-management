@@ -12,7 +12,7 @@ const transactionSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false,
   },
   category: {
     type: String, // קטגוריה (למשל, "הוצאות קבועות", "חיסכון")
