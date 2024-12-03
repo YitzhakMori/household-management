@@ -8,7 +8,9 @@ import adminRoutes from "./routes/adminRoutes.js";
 import shoppingRoutes from "./routes/shoppingRoutes.js";
 import User from './models/user.model.js'; // הייבוא של מודל המשתמש
 import bcrypt from 'bcryptjs'; // ספריית bcrypt לחיזוק סיסמאות
+
 import event from "./routes/events.js"
+
 import transactionsRoutes from "./routes/transactionsRoutes.js"
 import taskRoutes from "./routes/taskRoutes.js"
 import friendRequestRoutes from './routes/friendRequestRoutes.js'
@@ -64,6 +66,9 @@ app.use('/api/friends', friendRequestRoutes);
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);
+
+
+
 app.use('/api/events',event);
 app.use('/api/transaction',transactionsRoutes);
 app.use('/api/task',taskRoutes)

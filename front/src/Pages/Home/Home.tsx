@@ -5,6 +5,7 @@ import { getUserIdFromToken } from '../../utils/utils';
 import NavBar from '../../nav/Navbar';
 
 const Home: React.FC = () => {
+
   const [userId, setUserId] = useState<string | null>(null);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const navigate = useNavigate();
@@ -113,6 +114,7 @@ const Home: React.FC = () => {
                 <div className="border-t border-gray-200 pt-4">
                   <p className="text-2xl font-bold">{item.stats.count}</p>
                   <p className="text-sm text-gray-600">{item.stats.text}</p>
+
                 </div>
               </div>
             </div>
