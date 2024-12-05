@@ -1,7 +1,10 @@
+import { OAuth2Client } from 'google-auth-library';
+
 import Event from '../models/Event.js';
 import User from '../models/user.model.js';
 import eventSchema from "../models/Event.js"
 import mongoose from 'mongoose';
+import { google } from 'googleapis';
 
 
 export const getAllEvents = async (req, res) => {
@@ -128,5 +131,121 @@ export const updateEvent = async (req, res) => {
   } catch (error) {
     console.error('Error updating event:', error);
     res.status(500).json({ message: 'Error updating event' });
+  }
+};
+
+export const refreshGoogleToken = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user?.refreshToken) {
+      console.log('No refresh token found for user');
+      return null;
+    }
+
+    oauth2Client.setCredentials({
+      refresh_token: user.refreshToken
+    });
+
+    const { credentials } = await oauth2Client.refreshAccessToken();
+    
+    // עדכון הטוקן החדש
+    user.accessToken = credentials.access_token;
+    if (credentials.refresh_token) {
+      user.refreshToken = credentials.refresh_token;
+    }
+    
+    await user.save();
+    return credentials.access_token;
+
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    return null;
+  }
+};
+
+// פונקציה להוספת אירוע ליומן גוגל
+export const addToGoogleCalendar = async (req, res) => {
+  try {
+      const { eventData } = req.body;
+      const user = await User.findById(req.user.id);
+
+      if (!user?.accessToken) {
+          return res.status(401).json({
+              success: false,
+              message: "נדרשת התחברות מחדש עם Google"
+          });
+      }
+
+      const oauth2Client = new OAuth2Client(
+          process.env.GOOGLE_CLIENT_ID,
+          process.env.GOOGLE_CLIENT_SECRET,
+          'http://localhost:3000'
+      );
+
+      oauth2Client.setCredentials({
+          access_token: user.accessToken,
+          refresh_token: user.refreshToken
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      
+      // הוספת שעה לתאריך
+      const eventDate = new Date(eventData.date);
+      const eventEndDate = new Date(eventData.date);
+      eventEndDate.setHours(eventEndDate.getHours() + 1); // אירוע של שעה אחת
+
+      const event = {
+          summary: eventData.title,
+          description: eventData.description,
+          start: {
+              dateTime: eventDate.toISOString(),
+              timeZone: 'Asia/Jerusalem',
+          },
+          end: {
+              dateTime: eventEndDate.toISOString(),
+              timeZone: 'Asia/Jerusalem',
+          },
+      };
+
+      try {
+          const response = await calendar.events.insert({
+              calendarId: 'primary',
+              resource: event,
+          });
+
+          res.status(200).json({
+              success: true,
+              message: 'האירוע נוסף ליומן בהצלחה',
+              eventLink: response.data.htmlLink
+          });
+      } catch (calendarError) {
+          if (calendarError.response?.status === 401) {
+              const newAccessToken = await refreshGoogleToken(user._id);
+              if (newAccessToken) {
+                  oauth2Client.setCredentials({ access_token: newAccessToken });
+                  const response = await calendar.events.insert({
+                      calendarId: 'primary',
+                      resource: event,
+                  });
+
+                  res.status(200).json({
+                      success: true,
+                      message: 'האירוע נוסף ליומן בהצלחה',
+                      eventLink: response.data.htmlLink
+                  });
+              } else {
+                  throw new Error('נכשל חידוש הטוקן');
+              }
+          } else {
+              throw calendarError;
+          }
+      }
+  } catch (error) {
+      console.error('Error adding event to calendar:', error);
+      res.status(500).json({
+          success: false,
+          message: 'שגיאה בהוספת האירוע ליומן',
+          error: error.message
+      });
   }
 };

@@ -4,7 +4,10 @@ import EventForm from './EventForm';
 import { Event } from '../../../interfaces/Event';
 import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../../api/eventsApi';
 
+
+
 const EventTable = () => {
+
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,7 +107,42 @@ const EventTable = () => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+  const addToGoogleCalendar = async (event: Event) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showAlert('יש להתחבר מחדש', 'error');
+            return;
+        }
 
+        const response = await fetch('http://localhost:5001/api/events/add-to-calendar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ eventData: event })
+        });
+
+        const data = await response.json();
+        console.log('Calendar Response:', data);
+        
+        if (data.success) {
+            showAlert('האירוע נוסף ליומן בהצלחה', 'success');
+            if (data.eventLink) {
+                window.open(data.eventLink, '_blank');
+            }
+        } else {
+            throw new Error(data.message || 'שגיאה בהוספת האירוע ליומן');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert(
+            error instanceof Error ? error.message : 'שגיאה בהוספת האירוע ליומן',
+            'error'
+        );
+    }
+};
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50">
       {/* Header Section */}
@@ -173,6 +211,12 @@ const EventTable = () => {
                   <p className="text-gray-600 mt-2">{event.description}</p>
                   <div className="mt-4 flex space-x-2 space-x-reverse">
                     <button
+                      onClick={() => addToGoogleCalendar(event)}
+                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors flex items-center gap-1"
+                    >
+                      🗓️ הוסף ליומן
+                    </button>
+                    <button
                       onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}
                       className="px-3 py-1 text-sm text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded transition-colors"
                     >
@@ -195,80 +239,86 @@ const EventTable = () => {
           )}
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-gray-200 my-8"></div>
+       {/* Divider */}
+       <div className="border-t border-gray-200 my-8"></div>
 
-        {/* All Other Events Section */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">כל האירועים</h2>
-          {otherEvents.length > 0 ? (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">כותרת</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תיאור</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תאריך</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {otherEvents.map((event) => (
-                      <tr key={event._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">{event.title}</td>
-                        <td className="px-6 py-4">{event.description}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{formatDate (event.date)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex space-x-2 space-x-reverse">
-                            <button
-                              onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}
-                              className="px-3 py-1 text-sm text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded transition-colors"
-                            >
-                              עריכה
-                            </button>
-                            <button
-                              onClick={() => handleDeleteEvent(event._id || '')}
-                              className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                            >
-                              מחיקה
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-xl shadow-lg">
-              <p className="text-gray-500">אין אירועים עתידיים נוספים</p>
-            </div>
-          )}
-        </div>
+{/* All Other Events Section */}
+<div>
+  <h2 className="text-xl font-bold text-gray-900 mb-4">כל האירועים</h2>
+  {otherEvents.length > 0 ? (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">כותרת</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תיאור</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תאריך</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {otherEvents.map((event) => (
+              <tr key={event._id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap">{event.title}</td>
+                <td className="px-6 py-4">{event.description}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{formatDate(event.date)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex space-x-2 space-x-reverse">
+                    <button
+                      onClick={() => addToGoogleCalendar(event)}
+                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors flex items-center gap-1"
+                    >
+                      🗓️ הוסף ליומן
+                    </button>
+                    <button
+                      onClick={() => { setSelectedEvent(event); setIsModalOpen(true); }}
+                      className="px-3 py-1 text-sm text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded transition-colors"
+                    >
+                      עריכה
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEvent(event._id || '')}
+                      className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                    >
+                      מחיקה
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl">
-            <button
-              onClick={closeModal}
-              className="absolute -top-12 left-0 text-white hover:text-gray-200 transition-colors"
-            >
-              סגור ×
-            </button>
-            <EventForm
-              onAddEvent={handleAddEvent}
-              onUpdateEvent={handleUpdateEvent}
-              event={selectedEvent}
-            />
-          </div>
-        </div>
-      )}
     </div>
-  );
+  ) : (
+    <div className="text-center py-12 bg-white rounded-xl shadow-lg">
+      <p className="text-gray-500">אין אירועים עתידיים נוספים</p>
+    </div>
+  )}
+</div>
+</div>
+
+{/* Modal */}
+{isModalOpen && (
+<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+  <div className="relative w-full max-w-2xl">
+    <button
+      onClick={closeModal}
+      className="absolute -top-12 left-0 text-white hover:text-gray-200 transition-colors"
+    >
+      סגור ×
+    </button>
+    <EventForm
+      onAddEvent={handleAddEvent}
+      onUpdateEvent={handleUpdateEvent}
+      event={selectedEvent}
+    />
+  </div>
+</div>
+)}
+</div>
+);
 };
 
 export default EventTable;

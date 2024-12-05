@@ -1,6 +1,10 @@
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+
+
 import LoginPage from './components/LoginPage/LoginPage';
 import Home from './Pages/Home/Home';
 import SignUpPage from './components/SignUpPage/SignUpPage';
@@ -26,6 +30,8 @@ import FriendRequests from './components/FriendRequests/FriendRequests';
 
 function App() {
   return (
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
+
     <Router>
       <Routes>
         <Route path="/" element={<HomeMain />} />
@@ -48,6 +54,7 @@ function App() {
 
 
 
+
         <Route path="/events" element={
           <ProtectedRoutee>
             <EventTable />
@@ -55,6 +62,7 @@ function App() {
         } />
        </Routes>
     </Router>
+    </GoogleOAuthProvider>
   );
 }
 

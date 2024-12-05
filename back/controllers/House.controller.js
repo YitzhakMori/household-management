@@ -1,10 +1,17 @@
+import { OAuth2Client } from 'google-auth-library';
+import { google } from 'googleapis';
+import jwt from 'jsonwebtoken';
+
+
+import crypto from "crypto";
 import  User  from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
-import crypto from "crypto";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 import { sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/emails.js";
 import { sendWelcomeEmail } from "../mailtrap/emails.js";
 import { sendPasswordResetEmail } from "../mailtrap/emails.js";
+
+
 
 
 
@@ -200,6 +207,121 @@ export const checkAuth = async (req, res) => {
     }
 };
 
+
+export const googleAuth = async (req, res) => {
+    const { code } = req.body;  // הסרנו את redirect_uri כי נשתמש בקבוע
+    try {
+        console.log("Starting Google auth process");
+
+        // יצירת אובייקט OAuth2Client עם URI קבוע
+        const oauth2Client = new OAuth2Client(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            'http://localhost:3000'  // URI קבוע
+        );
+
+        if (!code) {
+            throw new Error("No authorization code provided");
+        }
+
+        // קבלת טוקנים מ-Google
+        const { tokens } = await oauth2Client.getToken(code);
+        console.log("Got Google tokens:", { 
+            access_token: tokens.access_token ? 'exists' : 'missing',
+            refresh_token: tokens.refresh_token ? 'exists' : 'missing'
+        });
+
+        oauth2Client.setCredentials(tokens);
+
+        // קבלת מידע על המשתמש
+        const oauth2Service = google.oauth2({ version: 'v2', auth: oauth2Client });
+        const userInfoResponse = await oauth2Service.userinfo.get();
+        const googleProfile = userInfoResponse.data;
+        console.log("Google Profile:", {
+            email: googleProfile.email,
+            name: googleProfile.name,
+            id: googleProfile.id
+        });
+
+        // חיפוש או יצירת משתמש
+        let user = await User.findOne({ email: googleProfile.email });
+        if (!user) {
+            const randomPassword = crypto.randomBytes(32).toString('hex');  // הגדלנו ל-32 בייט
+            user = new User({
+                email: googleProfile.email,
+                name: googleProfile.name,
+                password: randomPassword,
+                googleId: googleProfile.id,
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                authProvider: 'google',
+                isVerified: true,
+                friends: [],
+                role: 'user'
+            });
+        } else {
+            // עדכון משתמש קיים
+            user.googleId = googleProfile.id;
+            user.name = googleProfile.name;
+            user.accessToken = tokens.access_token;
+            if (tokens.refresh_token) {
+                user.refreshToken = tokens.refresh_token;
+            }
+            user.authProvider = 'google';
+            user.lastLogin = new Date();
+        }
+
+        await user.save();
+
+        // יצירת JWT
+        const jwtToken = jwt.sign(
+            {
+                user_id: user._id.toString(),
+                role: user.role,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            { 
+                expiresIn: '7d',
+                algorithm: 'HS256'
+            }
+        );
+
+        console.log("Created JWT token for user:", {
+            userId: user._id,
+            role: user.role,
+            tokenPrefix: jwtToken.substring(0, 20) + '...'
+        });
+
+        // שליחת תגובה
+        res.status(200).json({
+            success: true,
+            message: "התחברות עם Google בוצעה בהצלחה",
+            token: jwtToken,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                friends: user.friends
+            }
+        });
+
+    } catch (error) {
+        console.error("Google Auth Error:", {
+            name: error.name,
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+
+        res.status(500).json({
+            success: false,
+            message: "שגיאה בהתחברות עם Google",
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+};
 
 export const addFriend = async (userId, friendEmail) => {
     try {

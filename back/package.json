@@ -21,6 +21,7 @@
     "dotenv": "^16.4.5",
     "experss": "^0.0.1-security",
     "express": "^4.21.1",
+    "google-auth-library": "^9.15.0",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
     "mailtrap": "^3.4.0",
