@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Task, fetchAllTasks, addTask, updateTask, deleteTask } from "../../api/taskApi";
+import { Task, fetchAllTasks, addTask, updateTask, deleteTask } from "../api/taskApi";
 
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);

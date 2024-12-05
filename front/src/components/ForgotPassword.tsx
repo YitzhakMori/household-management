@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import css from "./FogotPassword.module.css"
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -27,10 +26,10 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className={css.container}>
+    <div >
       <h1>Forgot Password</h1>
-      <form onSubmit={handleSubmit} className={css.form}>
-        <div className={css.formGroup}>
+      <form onSubmit={handleSubmit} >
+        <div >
           <label htmlFor="email">Email:</label>
           <input
             type="email"
@@ -40,9 +39,9 @@ const ForgotPassword = () => {
             required
           />
         </div>
-        <button type="submit" className={css.submitButton}>Send Reset Link</button>
+        <button type="submit" >Send Reset Link</button>
       </form>
-      {message && <p className={css.message}>{message}</p>}
+      {message && <p >{message}</p>}
     </div>
   );
 };

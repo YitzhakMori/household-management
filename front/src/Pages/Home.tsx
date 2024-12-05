@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddFriend from '../../components/AddFriend/AddFriend';
-import { getUserIdFromToken } from '../../utils/utils';
-import { getFriendRequests, acceptFriendRequest, rejectFriendRequest } from '../../api/friendRequests';
+import AddFriend from '../components/AddFriend';
+import { getUserIdFromToken } from '../utils/utils';
+import { getFriendRequests, acceptFriendRequest, rejectFriendRequest } from '../api/friendRequests';
 // הוספת הממשק של בקשת חבר
 interface FriendRequest {
     _id: string;

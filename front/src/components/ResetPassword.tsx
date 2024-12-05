@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import css from './ResetPassword.module.css';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -37,10 +36,10 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className={css.container}>
+    <div >
       <h1>Reset Password</h1>
-      <form onSubmit={handleSubmit} className={css.form}>
-        <div className={css.formGroup}>
+      <form onSubmit={handleSubmit} >
+        <div >
           <label htmlFor="password">New Password:</label>
           <input
             type="password"
@@ -50,7 +49,7 @@ const ResetPassword = () => {
             required
           />
         </div>
-        <div className={css.formGroup}>
+        <div >
           <label htmlFor="confirmPassword">Confirm New Password:</label>
           <input
             type="password"
@@ -60,9 +59,9 @@ const ResetPassword = () => {
             required
           />
         </div>
-        <button type="submit" className={css.submitButton}>Reset Password</button>
+        <button type="submit" >Reset Password</button>
       </form>
-      {message && <p className={css.message}>{message}</p>}
+      {message && <p >{message}</p>}
     </div>
   );
 };

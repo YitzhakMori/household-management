@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { makeAuthenticatedRequest } from '../../utils/api';
-import { handleAuthError } from '../../utils/authInterceptor';
+import { makeAuthenticatedRequest } from '../utils/api';
+import { handleAuthError } from '../utils/authInterceptor';
 
 interface AddFriendProps {
   onSuccess?: () => void;
