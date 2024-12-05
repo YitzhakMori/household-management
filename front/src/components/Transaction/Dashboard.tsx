@@ -27,6 +27,12 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+  onClick={() => window.location.href = '/home'}
+  className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
+>
+  חזרה לדף הבית
+</button>
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-2">ניהול פיננסי</h1>
             <p className="text-blue-100">ניהול והצגת המידע הפיננסי שלך במקום אחד</p>

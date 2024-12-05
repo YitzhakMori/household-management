@@ -53,29 +53,25 @@ export const sendFriendRequest = async (req, res) => {
  * הצגת בקשות החברות
  */
 
-
 export const getFriendRequests = async (req, res) => {
     try {
-        const userId = req.user.id; // מזהה המשתמש מתוך ה-middleware `auth`
-
-        // שליפת כל בקשות החברות שבהן המשתמש הוא ה-recipient
+        const userId = req.user.id;
         const friendRequests = await FriendRequest.find({ recipient: userId, status: 'pending' })
-            .populate('sender', 'name email') // שליפת פרטים על השולח
+            .populate('sender', 'name email')
             .exec();
 
-        // אם אין בקשות, שלח הודעה מתאימה
-        if (friendRequests.length === 0) {
-            return res.status(200).json({ message: "אין בקשות חדשות" });
-        }
-
-        // אם יש בקשות, שלח את הבקשות
-        res.status(200).json(friendRequests);
+        res.status(200).json({
+            success: true,
+            requests:  []// תמיד יהיה מערך, אפילו ריק
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "שגיאת שרת", error: error.message });
+        res.status(500).json({
+            success: false,
+            requests: [],
+            message: "שגיאת שרת"
+        });
     }
 };
-
 
 export const acceptFriendRequest = async (req, res) => {
     try {

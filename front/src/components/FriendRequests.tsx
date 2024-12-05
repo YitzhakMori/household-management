@@ -4,11 +4,10 @@ import AddFriend from '../components/AddFriend';
 import { getUserIdFromToken } from '../utils/utils';
 import { makeAuthenticatedRequest } from '../utils/api';
 import { handleAuthError } from '../utils/authInterceptor';
-
 interface FriendRequest {
   _id: string;
   sender: {
-    name: string;
+    name?: string; 
     email: string;
   };
 }
@@ -28,9 +27,10 @@ interface MenuItem {
 }
 
 const Home: React.FC = () => {
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [alert, setAlert] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const navigate = useNavigate();
@@ -100,15 +100,40 @@ const Home: React.FC = () => {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const loadFriendRequests = async () => {
-    try {
-      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/requests');
-      setFriendRequests(response.requests);
-    } catch (error) {
-      handleAuthError(error);
-      console.error('Error loading friend requests:', error);
+
+// תיקון הפונקציה
+
+
+const loadFriendRequests = async () => {
+  setLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const response = await fetch('http://localhost:5001/api/friends/requests', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+    console.log('Response:', data); // לבדיקה
+    
+    // ודא שיש מערך
+    if (data && Array.isArray(data.requests)) {
+      setFriendRequests(data.requests);
+    } else {
+      setFriendRequests([]);
     }
-  };
+  } catch (error) {
+    console.error('Error:', error);
+    setFriendRequests([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
@@ -168,7 +193,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-
+   
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -185,75 +210,74 @@ const Home: React.FC = () => {
                   className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-colors relative"
                 >
                   <span className="text-2xl">🔔</span>
-                  {friendRequests.length > 0 && (
+                  {!loading && friendRequests.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-xs">
                       {friendRequests.length}
                     </span>
                   )}
                 </button>
-
+   
                 {isRequestsOpen && (
                   <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
                     <div className="p-4 border-b">
                       <h3 className="text-lg font-semibold">בקשות חברות</h3>
-                      {friendRequests.length === 0 && (
-                        <p className="text-gray-500 text-sm mt-2">אין בקשות חברות ממתינות</p>
-                      )}
                     </div>
                     
                     <div className="max-h-96 overflow-y-auto">
-                      {friendRequests.map((request) => (
-                        <div 
-                          key={request._id}
-                          className="p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0"
-                        >
-                          <div className="flex items-center mb-2">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
-                              {request.sender.name.charAt(0)}
-                            </div>
-                            <div className="mr-3 flex-1">
-                              <div className="font-medium">{request.sender.name}</div>
-                              <div className="text-sm text-gray-500">{request.sender.email}</div>
-                            </div>
-                          </div>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <button
-                              onClick={() => handleAcceptRequest(request._id)}
-                              className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              אשר
-                            </button>
-                            <button
-                              onClick={() => handleRejectRequest(request._id)}
-                              className="flex-1 px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-                            >
-                              דחה
-                            </button>
-                          </div>
+                      {loading ? (
+                        <div className="p-4 text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                         </div>
-                      ))}
+                      ) : friendRequests.length === 0 ? (
+                        <p className="text-gray-500 text-sm p-4">אין בקשות חברות ממתינות</p>
+                      ) : (
+                        friendRequests.map((request) => (
+                          <div 
+                            key={request._id}
+                            className="p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0"
+                          >
+                            <div className="flex items-center mb-2">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
+                                {request.sender.name?.charAt(0)}
+                              </div>
+                              <div className="mr-3 flex-1">
+                                <div className="font-medium">{request.sender.name}</div>
+                                <div className="text-sm text-gray-500">{request.sender.email}</div>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2 space-x-reverse">
+                              <button
+                                onClick={() => handleAcceptRequest(request._id)}
+                                className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                אשר
+                              </button>
+                              <button
+                                onClick={() => handleRejectRequest(request._id)}
+                                className="flex-1 px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                              >
+                                דחה
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
               </div>
-
+   
               <button
                 onClick={() => setShowAddFriendModal(true)}
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg shadow 
-                  hover:shadow-lg hover:scale-105 hover:bg-blue-50 
-                  transition-all duration-300 ease-in-out
-                  flex items-center space-x-2 space-x-reverse"
+                className="bg-white text-blue-600 px-6 py-3 rounded-lg shadow hover:shadow-lg hover:scale-105 hover:bg-blue-50 transition-all duration-300 ease-in-out flex items-center space-x-2 space-x-reverse"
               >
                 <span className="text-xl">👥</span>
                 <span className="font-medium">הוספת חבר</span>
               </button>
-
+   
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-6 py-3 rounded-lg shadow 
-                  hover:shadow-lg hover:scale-105 hover:bg-red-600
-                  transition-all duration-300 ease-in-out
-                  flex items-center space-x-2 space-x-reverse"
+                className="bg-red-500 text-white px-6 py-3 rounded-lg shadow hover:shadow-lg hover:scale-105 hover:bg-red-600 transition-all duration-300 ease-in-out flex items-center space-x-2 space-x-reverse"
               >
                 <span className="text-xl">🚪</span>
                 <span className="font-medium">התנתקות</span>
@@ -262,7 +286,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-
+   
       {/* Quick Stats */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -282,7 +306,7 @@ const Home: React.FC = () => {
           ))}
         </div>
       </div>
-
+   
       {/* Main Menu */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -299,7 +323,7 @@ const Home: React.FC = () => {
           ))}
         </div>
       </div>
-
+   
       {/* Add Friend Modal */}
       {showAddFriendModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -311,9 +335,7 @@ const Home: React.FC = () => {
             <div className="bg-white rounded-lg shadow-xl p-6 relative">
               <button
                 onClick={() => setShowAddFriendModal(false)}
-                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 hover:bg-gray-100 
-                  w-8 h-8 flex items-center justify-center rounded-full 
-                  transition-all duration-300"
+                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 hover:bg-gray-100 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300"
               >
                 ×
               </button>
@@ -323,7 +345,5 @@ const Home: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
-
+   )};
 export default Home;
