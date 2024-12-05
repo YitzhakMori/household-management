@@ -1,9 +1,32 @@
-
+import GoogleLoginButton from '../GoogleLoginButton'; 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import { LoginFormData } from '../../modules/LoginDate';
+import { CodeResponse } from '@react-oauth/google';
+
+// נוסיף את הטיפוסים
+interface GoogleTokenResponse {
+  access_token: string;
+  code?: string;
+  scope: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  token: string;
+  user: {
+    id: string;
+    role: string;
+    name: string;
+    email: string;
+    friends: string[];
+  };
+}
 
 const LoginPage = () => {
+
   const [Data, setData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -16,7 +39,7 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     try {
       const response = await fetch('http://localhost:5001/api/House/login', {
         method: 'POST',
@@ -25,27 +48,92 @@ const LoginPage = () => {
         },
         body: JSON.stringify(Data),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Invalid credentials');
-      }
-
+  
       const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || 'שגיאה בהתחברות');
+      }
+  
+      // שמירת הטוקן בפורמט הנכון
       localStorage.setItem('token', data.token);
-      localStorage.setItem('data', JSON.stringify(data.user));
-
+      localStorage.setItem('userData', JSON.stringify(data.user));
+  
       if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/home');
       }
-    } catch (error: any) {
-      setError(error.message || 'אירעה שגיאה');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'שגיאה בהתחברות');
     } finally {
       setLoading(false);
     }
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse: CodeResponse) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('http://localhost:5001/api/House/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            code: codeResponse.code,
+            redirect_uri: 'http://localhost:3000'
+          }),
+        });
+
+        const data = await response.json();
+        console.log("Server Response:", data);
+
+        if (!response.ok) {
+          throw new Error(data.message || 'שגיאה בהתחברות עם Google');
+        }
+
+        if (data.success && data.token) {
+          // שמירת הטוקן בפורמט הנכון
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+
+          // בדיקה שהטוקן נשמר
+          console.log("Saved token:", localStorage.getItem('token'));
+
+          if (data.user.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/home');
+          }
+        } else {
+          throw new Error(data.message || 'חסרים נתונים בתגובה מהשרת');
+        }
+      } catch (error) {
+        console.error('Google login error:', error);
+        setError(error instanceof Error ? error.message : 'שגיאה בהתחברות');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error('Google login error:', error);
+      setError('שגיאה בהתחברות עם Google');
+    },
+    flow: 'auth-code',
+    scope: 'email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
+});
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 py-12 px-4 sm:px-6 lg:px-8">
@@ -56,7 +144,27 @@ const LoginPage = () => {
           <p className="text-gray-600">התחבר כדי לנהל את משק הבית שלך</p>
         </div>
 
-        {/* Form */}
+        {/* Google Login Button */}
+        <button
+          onClick={() => googleLogin()}
+          className="w-full mb-4 py-3 px-4 border border-gray-300 rounded-lg flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50 transition-all"
+          disabled={loading}
+        >
+          <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+          התחבר עם Google
+        </button>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">או</span>
+          </div>
+        </div>
+
+        {/* Regular Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
@@ -66,7 +174,7 @@ const LoginPage = () => {
               type="email"
               id="email"
               value={Data.email}
-              onChange={(e) => setData({ ...Data, email: e.target.value })}
+              onChange={handleChange}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               placeholder="הכנס את האימייל שלך"
@@ -81,14 +189,13 @@ const LoginPage = () => {
               type="password"
               id="password"
               value={Data.password}
-              onChange={(e) => setData({ ...Data, password: e.target.value })}
+              onChange={handleChange}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               placeholder="הכנס את הסיסמה שלך"
             />
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 text-red-700 p-3 rounded-lg text-center text-sm">
               {error}
@@ -140,5 +247,4 @@ const LoginPage = () => {
     </div>
   );
 };
-
 export default LoginPage;

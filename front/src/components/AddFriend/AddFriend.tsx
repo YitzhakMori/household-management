@@ -1,36 +1,109 @@
 import React, { useState } from 'react';
-import { sendFriendRequest } from '../../api/friendRequests';
+import { makeAuthenticatedRequest } from '../../utils/api';
+import { handleAuthError } from '../../utils/authInterceptor';
 
-const AddFriend: React.FC = () => {
-    const [email, setEmail] = useState<string>('');
-    const [message, setMessage] = useState<string>('');
+interface AddFriendProps {
+  onSuccess?: () => void;
+}
 
-    const handleAddFriend = async () => {
-        if (!email) {
-            setMessage('יש להזין מייל');
-            return;
-        }
+interface MessageState {
+  text: string;
+  type: 'success' | 'error' | 'info';
+}
 
-        try {
-            const result = await sendFriendRequest({ recipientEmail: email });
-            setMessage(result.message); // הצגת הודעה על הצלחה או שגיאה
-        } catch (error) {
-            setMessage('שגיאה בהוספת חבר');
-        }
-    };
+const AddFriend: React.FC<AddFriendProps> = ({ onSuccess }) => {
+  const [email, setEmail] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<MessageState | null>(null);
 
-    return (
-        <div>
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="הכנס מייל של חבר"
-            />
-            <button onClick={handleAddFriend}>הוסף חבר</button>
-            {message && <p>{message}</p>}
+  const handleAddFriend = async () => {
+    if (!email) {
+      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני', type: 'error' });
+      return;
+    }
+
+    // בדיקת תקינות כתובת המייל
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני תקינה', type: 'error' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/add', {
+        method: 'POST',
+        body: JSON.stringify({ recipientEmail: email })
+      });
+
+      setMessage({ text: 'בקשת החברות נשלחה בהצלחה', type: 'success' });
+      setEmail('');
+      
+      // קריאה ל-callback אם הוא קיים
+      if (onSuccess) {
+        setTimeout(onSuccess, 1500); // מחכה 1.5 שניות לפני סגירת המודל
+      }
+    } catch (error) {
+      handleAuthError(error);
+      setMessage({ 
+        text: error instanceof Error ? error.message : 'שגיאה בשליחת בקשת החברות',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">הוספת חבר חדש</h2>
+      
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+          כתובת דואר אלקטרוני
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="הכנס את המייל של החבר"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          disabled={loading}
+        />
+      </div>
+
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg ${
+          message.type === 'success' ? 'bg-green-100 text-green-800' :
+          message.type === 'error' ? 'bg-red-100 text-red-800' :
+          'bg-blue-100 text-blue-800'
+        }`}>
+          {message.text}
         </div>
-    );
+      )}
+
+      <button
+        onClick={handleAddFriend}
+        disabled={loading}
+        className={`w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg
+          hover:bg-blue-700 transition-colors duration-200
+          ${loading ? 'opacity-50 cursor-not-allowed' : ''}
+          flex items-center justify-center`}
+      >
+        {loading ? (
+          <>
+            <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
+            שולח בקשה...
+          </>
+        ) : (
+          'שלח בקשת חברות'
+        )}
+      </button>
+    </div>
+  );
 };
 
 export default AddFriend;

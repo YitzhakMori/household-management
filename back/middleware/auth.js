@@ -3,38 +3,45 @@ import User from '../models/user.model.js';
 
 export const auth = async (req, res, next) => {
     try {
-        const token = req.header('Authorization');
-        if (!token) {
-            return res.status(401).json({ message: "אין הרשאה" });
+        const authHeader = req.header('Authorization');
+        
+        if (!authHeader) {
+            return res.status(401).json({
+                success: false,
+                message: "אין הרשאה - חסר טוקן"
+            });
         }
 
-        const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
+        // מנקים את הטוקן מכפילויות של Bearer
+        const token = authHeader.replace(/^Bearer\s+/i, '').replace(/^Bearer\s+/i, '');
+        console.log('Clean token:', token);
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.user_id);
+        
         if (!user) {
-            return res.status(404).json({ message: "משתמש לא נמצא" });
+            return res.status(404).json({
+                success: false,
+                message: "משתמש לא נמצא"
+            });
         }
 
-        // הוספת המידע של המשתמש (כולל ה-role) ל-req.user
-        // req.user = { 
-        //     id: user._id, 
-        //     role: user.role,  // הוספת ה-role
-        //     email: user.email  // אם צריך מידע נוסף
-        //     friends: user.friends
-
-        // };
-        req.user = {};
-        req.user.id = user._id;
-        req.user.role = user.role;
-        req.user.email = user.email;
-        req.user.friends = user.friends;
-
-
+        req.user = user;
         next();
     } catch (error) {
-        res.status(401).json({ message: "ההרשאה נכשלה" });
-        console.log(error);
+        console.error('Auth Error:', {
+            name: error.name,
+            message: error.message,
+            originalToken: req.header('Authorization')
+        });
+        
+        res.status(401).json({
+            success: false,
+            message: "ההרשאה נכשלה",
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 
-
+// מייצא את ה-middleware שלנו כברירת מחדל
 export default auth;

@@ -1,19 +1,17 @@
-// adminRoutes.js
-
 import express from 'express';
 import { getAllUsers, deleteUser, searchUsers } from '../controllers/adminController.js';
-import { adminOnly } from '../middleware/adminMiddleware.js'; // ייבוא של ה-middleware לבדיקה אם המשתמש הוא אדמין
-import auth from '../middleware/auth.js'; // ייבוא של ה-middleware לאימות משתמשים
+import { adminOnly } from '../middleware/adminMiddleware.js';
+import { auth } from '../middleware/auth.js';  // שינוי הייבוא והוספת סיומת .js
 
 const router = express.Router();
 
-// נתיב לקבלת כל המשתמשים (רק לאדמין)
+// הסדר הנכון של הנתיבים - נתיב ספציפי יותר קודם
+router.get('/users/search', auth, adminOnly, searchUsers);
+
+// נתיב לקבלת כל המשתמשים
 router.get('/users', auth, adminOnly, getAllUsers);
 
-// נתיב למחיקת משתמש (רק לאדמין)
+// נתיב למחיקת משתמש
 router.delete('/users/:userId', auth, adminOnly, deleteUser);
-
-// נתיב לחיפוש משתמשים (רק לאדמין)
-router.get('/users/search', auth, adminOnly, searchUsers);
 
 export default router;

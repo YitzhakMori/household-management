@@ -1,17 +1,30 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddFriend from '../../components/AddFriend/AddFriend';
 import { getUserIdFromToken } from '../../utils/utils';
-import { getFriendRequests, acceptFriendRequest, rejectFriendRequest } from '../../api/friendRequests';
+import { makeAuthenticatedRequest } from '../../utils/api';
+import { handleAuthError } from '../../utils/authInterceptor';
 
-// הוספת הממשק של בקשת חבר
 interface FriendRequest {
   _id: string;
   sender: {
     name: string;
     email: string;
   };
+}
+
+interface QuickStat {
+  title: string;
+  value: string | number;
+  icon: string;
+  color: string;
+}
+
+interface MenuItem {
+  title: string;
+  description: string;
+  icon: string;
+  route: string;
 }
 
 const Home: React.FC = () => {
@@ -21,9 +34,60 @@ const Home: React.FC = () => {
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [alert, setAlert] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const navigate = useNavigate();
-  
-  const menuItems = [/* ... קוד קיים ... */];
-  const quickStats = [/* ... קוד קיים ... */];
+
+  const quickStats: QuickStat[] = [
+    {
+      title: 'מטלות להיום',
+      value: '5',
+      icon: '📋',
+      color: 'bg-blue-100 text-blue-800'
+    },
+    {
+      title: 'פריטים ברשימת קניות',
+      value: '12',
+      icon: '🛒',
+      color: 'bg-green-100 text-green-800'
+    },
+    {
+      title: 'אירועים קרובים',
+      value: '3',
+      icon: '📅',
+      color: 'bg-purple-100 text-purple-800'
+    },
+    {
+      title: 'הוצאות החודש',
+      value: '₪2,450',
+      icon: '💰',
+      color: 'bg-yellow-100 text-yellow-800'
+    }
+  ];
+
+  const menuItems: MenuItem[] = [
+    {
+      title: 'רשימת קניות',
+      description: 'נהל את רשימת הקניות המשותפת',
+      icon: '🛒',
+      route: '/shopping-list'
+    },
+    {
+      title: 'אירועים',
+      description: 'צפה ונהל את לוח האירועים',
+      icon: '📅',
+      route: '/events'
+    },
+    {
+      title: 'משימות',
+      description: 'נהל את המשימות היומיות',
+      icon: '📋',
+      route: '/tasks'
+    },
+    {
+      title: 'ניהול תקציב',
+      description: 'עקוב אחר הוצאות והכנסות',
+      icon: '💰',
+      route: '/budget'
+    }
+  ];
 
   useEffect(() => {
     const userIdFromToken = getUserIdFromToken();
@@ -38,34 +102,56 @@ const Home: React.FC = () => {
 
   const loadFriendRequests = async () => {
     try {
-      const requests = await getFriendRequests();
-      setFriendRequests(requests);
+      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/requests');
+      setFriendRequests(response.requests);
     } catch (error) {
+      handleAuthError(error);
       console.error('Error loading friend requests:', error);
     }
   };
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
-      await acceptFriendRequest(requestId);
+      await makeAuthenticatedRequest('http://localhost:5001/api/friends/accept', {
+        method: 'POST',
+        body: JSON.stringify({ requestId })
+      });
+      
       setFriendRequests(prevRequests => 
         prevRequests.filter(request => request._id !== requestId)
       );
       showAlert('בקשת החברות אושרה בהצלחה', 'success');
     } catch (error) {
+      handleAuthError(error);
       showAlert('שגיאה באישור הבקשה', 'error');
     }
   };
 
   const handleRejectRequest = async (requestId: string) => {
     try {
-      await rejectFriendRequest(requestId);
+      await makeAuthenticatedRequest('http://localhost:5001/api/friends/reject', {
+        method: 'POST',
+        body: JSON.stringify({ requestId })
+      });
+      
       setFriendRequests(prevRequests => 
         prevRequests.filter(request => request._id !== requestId)
       );
       showAlert('בקשת החברות נדחתה', 'success');
     } catch (error) {
+      handleAuthError(error);
       showAlert('שגיאה בדחיית הבקשה', 'error');
+    }
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      navigate('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      showAlert('שגיאה בהתנתקות', 'error');
     }
   };
 
@@ -73,17 +159,11 @@ const Home: React.FC = () => {
     <div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
       {/* Alert */}
       {alert && (
-        <div 
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 
-            ${alert.type === 'success' 
-              ? 'bg-green-100 text-green-800 border border-green-200' 
-              : 'bg-red-100 text-red-800 border border-red-200'
-            }`}
-        >
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 
+          ${alert.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' 
+          : 'bg-red-100 text-red-800 border border-red-200'}`}>
           <div className="flex items-center gap-2">
-            <span className="text-xl">
-              {alert.type === 'success' ? '✓' : '⚠️'}
-            </span>
+            <span className="text-xl">{alert.type === 'success' ? '✓' : '⚠️'}</span>
             <span className="font-medium">{alert.message}</span>
           </div>
         </div>
@@ -169,10 +249,7 @@ const Home: React.FC = () => {
               </button>
 
               <button
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  window.location.href = '/';
-                }}
+                onClick={handleLogout}
                 className="bg-red-500 text-white px-6 py-3 rounded-lg shadow 
                   hover:shadow-lg hover:scale-105 hover:bg-red-600
                   transition-all duration-300 ease-in-out
@@ -186,10 +263,42 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Rest of the existing content */}
-      {/* ... Quick Stats ... */}
-      {/* ... Main Content ... */}
-      {/* ... Footer ... */}
+      {/* Quick Stats */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickStats.map((stat, index) => (
+            <div
+              key={index}
+              className={`${stat.color} p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow`}
+            >
+              <div className="flex items-center">
+                <span className="text-3xl mr-4">{stat.icon}</span>
+                <div>
+                  <h3 className="text-sm font-medium mb-1">{stat.title}</h3>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Menu */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {menuItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={() => navigate(item.route)}
+              className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all hover:scale-105"
+            >
+              <span className="text-4xl mb-4 block">{item.icon}</span>
+              <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+              <p className="text-gray-600 text-sm">{item.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Add Friend Modal */}
       {showAddFriendModal && (
@@ -208,7 +317,7 @@ const Home: React.FC = () => {
               >
                 ×
               </button>
-              {userId && <AddFriend />}
+              {userId && <AddFriend onSuccess={() => setShowAddFriendModal(false)} />}
             </div>
           </div>
         </div>

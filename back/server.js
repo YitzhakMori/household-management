@@ -56,13 +56,29 @@ const createAdmin = async () => {
 createAdmin();
 
 const corsOptions = {
-    origin: 'http://localhost:3000', // הכתובת של הקליינט
-    credentials: true, // מאפשר שליחת cookies, headers או credentials אחרים
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'],
 };
 
+
+
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    next();
+});
+
+
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
+
+
 
 app.use('/api/friends', friendRequestRoutes);
 app.use("/api/House", HouseRoutes);
