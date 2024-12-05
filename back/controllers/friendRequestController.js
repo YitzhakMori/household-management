@@ -1,6 +1,6 @@
 import FriendRequest from '../models/friendRequestModel.js';
 import User from '../models/user.model.js';
-import { addFriend } from './House.controller.js';
+import { addFriend } from './Housecontroller.js';
 
 /**
  * שליחת בקשת חברות

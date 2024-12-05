@@ -39,7 +39,7 @@ const VerifyEmail = () => {
       showAlert('האימות בוצע בהצלחה! מעביר אותך לדף הבית...', 'success');
       
       setTimeout(() => {
-        navigate('/');
+        navigate('/Home');
       }, 2000);
 
     } catch (error: any) {

@@ -97,11 +97,11 @@ export const login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" });
+            return res.status(400).send("משתמש לא נמצא");
         }
         const isPasswordCorrect = await bcryptjs.compare(password, user.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" });
+            return res.status(400).send("הסיסמה שגויה");
         }
 
         // יצירת טוקן ושמירתו בעוגיה

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import contactDb from "./db/contactDb.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import HouseRoutes from "./routes/House.route.js";
+import HouseRoutes from "./routes/HouseRouter.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import shoppingRoutes from "./routes/shoppingRoutes.js";
 import User from './models/user.model.js'; // הייבוא של מודל המשתמש

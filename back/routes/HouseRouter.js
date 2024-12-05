@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logOut, signup ,verifyEmail,forgotPassword,resetPassword,checkAuth, addFriend,removeFriend} from "../controllers/House.controller.js";
+import { login, logOut, signup ,verifyEmail,forgotPassword,resetPassword,checkAuth, addFriend,removeFriend} from "../controllers/Housecontroller.js";
 import { auth } from "../middleware/auth.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
