@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Navbar.module.css';
-import Logout from '../components/Logout/Logout';  // ייבוא רכיב ה-Logout
+import Logout from '../components/Logout';  // ייבוא רכיב ה-Logout
 
 interface Button {
   path?: string;

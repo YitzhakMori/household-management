@@ -1,8 +1,8 @@
-import GoogleLoginButton from '../GoogleLoginButton'; 
+import GoogleLoginButton from './GoogleLoginButton'; 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
-import { LoginFormData } from '../../modules/LoginDate';
+import { LoginFormData } from '../modules/LoginDate';
 import { CodeResponse } from '@react-oauth/google';
 
 // נוסיף את הטיפוסים

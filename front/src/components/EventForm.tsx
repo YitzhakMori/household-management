@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Event, EventFormProps } from '../../../interfaces/Event';
+import { Event, EventFormProps } from '../interfaces/Event';
 
 const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event }) => {
   const [formState, setFormState] = useState<Event>({

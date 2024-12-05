@@ -5,23 +5,23 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 
-import LoginPage from './components/LoginPage/LoginPage';
-import Home from './Pages/Home/Home';
-import SignUpPage from './components/SignUpPage/SignUpPage';
-import VerifyEmail from './components/VerifyEmail/VerifyEmail';
-import ForgotPassword from './components/ForgotPassword/ForgotPassword';
-import ResetPassword from './components/ResetPassword/ResetPassword';
-import AdminPage from './components/Admin/Admin';
-import HomeMain from './Pages/HomeMain/HomeMain';
-import AddFriend from './components/AddFriend/AddFriend';
+import LoginPage from './components/LoginPage';
+import Home from './Pages/Home';
+import SignUpPage from './components/SignUpPage';
+import VerifyEmail from './components/VerifyEmail';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import AdminPage from './components/Admin';
+import HomeMain from './Pages/HomeMain';
+import AddFriend from './components/AddFriend';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import ProtectedRoutee from './components/ProtectedRoute/ProtectedRoutee';
-import ShoppingList from './components/ShoppingList/ShoppingList';
+import ShoppingList from './components/ShoppingList';
 import Dashboard from './components/Transaction/Dashboard';
 
-import EventTable from './components/Event/EventForm/EventTable';
-import TaskList from './components/Task/TaskList';
-import FriendRequests from './components/FriendRequests/FriendRequests';
+import EventTable from './components/EventTable';
+import TaskList from './components/TaskList';
+import FriendRequests from './components/FriendRequests';
 
 
 

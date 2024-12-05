@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddFriend from '../../components/AddFriend/AddFriend';
-import { getUserIdFromToken } from '../../utils/utils';
-import { makeAuthenticatedRequest } from '../../utils/api';
-import { handleAuthError } from '../../utils/authInterceptor';
+import AddFriend from '../components/AddFriend';
+import { getUserIdFromToken } from '../utils/utils';
+import { makeAuthenticatedRequest } from '../utils/api';
+import { handleAuthError } from '../utils/authInterceptor';
 
 interface FriendRequest {
   _id: string;

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchShoppingItems, addShoppingItem, updateShoppingItem, deleteShoppingItem } from '../../api/shoppingApi';
+import { fetchShoppingItems, addShoppingItem, updateShoppingItem, deleteShoppingItem } from '../api/shoppingApi';
 
 interface ShoppingItem {
     _id: string;

@@ -1,7 +1,7 @@
-import GoogleLoginButton from '../GoogleLoginButton';  // הוסף את זה בראש הקובץ
+import GoogleLoginButton from './GoogleLoginButton';  // הוסף את זה בראש הקובץ
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SignUpFormData } from '../../modules/LoginDate';
+import { SignUpFormData } from '../modules/LoginDate';
 
 
 const SignUpPage = () => {
