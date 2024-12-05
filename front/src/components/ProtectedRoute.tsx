@@ -1,16 +1,16 @@
-// src/components/ProtectedRoute/ProtectedRoute.tsx
-import React from 'react';
+// components/ProtectedRoute/ProtectedRoute.tsx
 import { Navigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+
 interface DecodedToken {
   user_id: string;
   role: string;
-  exp: number; // Timestamp of expiration
+  exp: number;
 }
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem('token');
-
+  
   if (!token) {
     return <Navigate to="/login" />;
   }
@@ -24,6 +24,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     }
 
     return children;
+
   } catch (error) {
     return <Navigate to="/login" />;
   }
