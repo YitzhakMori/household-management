@@ -42,6 +42,7 @@ const Dashboard: React.FC = () => {
           }),
           fetch('http://localhost:5001/api/fixedPayments/total-fixed-payments', {
             method: 'GET',
+            
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
