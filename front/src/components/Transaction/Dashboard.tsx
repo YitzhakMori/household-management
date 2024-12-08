@@ -1,77 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFinancialContext } from '../../components/context/FinancialContext';
 import TransactionsTable from './TransactionTable';
 import SavingsTable from './SavingsTable';
 import FixedPaymentsTable from './FixedPaymentsTable';
 import Graphs from './Graphs';
 
 const Dashboard: React.FC = () => {
+  const { financialData } = useFinancialContext();
   const [activeTab, setActiveTab] = useState<'transactions' | 'savings' | 'fixed' | 'graphs'>('transactions');
-  const [financialData, setFinancialData] = useState({
-    totalIncome: 0,
-    totalExpenses: 0,
-    totalSavings: 0,
-    totalFixedPayments: 0,
-  });
-
-  useEffect(() => {
-    const fetchFinancialData = async () => {
-      const token = localStorage.getItem('token'); // נניח שהטוקן מאוחסן ב-localStorage
-
-      try {
-        const [incomeRes, expensesRes, savingsRes, fixedPaymentsRes] = await Promise.all([
-          fetch('http://localhost:5001/api/transaction/total-income', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          },
-          }),
-          fetch('http://localhost:5001/api/transaction/total-expenses', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          },
-          }),
-          fetch('http://localhost:5001/api/savings/total-savings', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          },
-          }),
-          fetch('http://localhost:5001/api/fixedPayments/total-fixed-payments', {
-            method: 'GET',
-            
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          },
-          })
-        ]);
-
-        if (!incomeRes.ok || !expensesRes.ok || !savingsRes.ok || !fixedPaymentsRes.ok) {
-          throw new Error('Failed to fetch financial data');
-        }
-
-        const incomeData = await incomeRes.json();
-        const expensesData = await expensesRes.json();
-        const savingsData = await savingsRes.json();
-        const fixedPaymentsData = await fixedPaymentsRes.json();
-
-        setFinancialData({
-          totalIncome: incomeData.totalIncome,
-          totalExpenses: expensesData.totalExpenses,
-          totalSavings: savingsData.totalSavings,
-          totalFixedPayments: fixedPaymentsData.totalFixedPayments,
-        });
-      } catch (error) {
-        console.error('Error fetching financial data:', error);
-      }
-    };
-
-    fetchFinancialData();
-  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -93,12 +29,12 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-  onClick={() => window.location.href = '/home'}
-  className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
->
-  חזרה לדף הבית
-</button>
+          <button
+            onClick={() => window.location.href = '/home'}
+            className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
+          >
+            חזרה לדף הבית
+          </button>
           <div className="text-center">
             <h1 className="text-4xl font-bold text-white mb-2">ניהול פיננסי</h1>
             <p className="text-blue-100">ניהול והצגת המידע הפיננסי שלך במקום אחד</p>

@@ -33,6 +33,7 @@ const Home: React.FC = () => {
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [alert, setAlert] = useState<{message: string; type: 'success' | 'error'} | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const quickStats: QuickStat[] = [
@@ -90,9 +91,11 @@ const Home: React.FC = () => {
   ];
 
   useEffect(() => {
-    const userIdFromToken = getUserIdFromToken();
-    setUserId(userIdFromToken);
-    loadFriendRequests();
+    const user = getUserIdFromToken(); // הפונקציה מחזירה אובייקט או null
+    if (user) {
+      setUserId(user.userId); // שליפת userId בלבד והגדרת state
+      setUserName(user.name); // שליפת name בלבד והגדרת state
+    }
   }, []);
 
   const showAlert = (message: string, type: 'success' | 'error') => {

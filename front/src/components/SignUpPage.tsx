@@ -23,6 +23,7 @@ const SignUpPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      
       const response = await fetch('http://localhost:5001/api/House/signUp', {
         method: 'POST',
         headers: {
