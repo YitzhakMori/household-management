@@ -5,7 +5,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { LoginFormData } from '../modules/LoginDate';
 import { CodeResponse } from '@react-oauth/google';
 
-// נוסיף את הטיפוסים
+
 interface GoogleTokenResponse {
   access_token: string;
   code?: string;
@@ -55,7 +55,7 @@ const LoginPage = () => {
         throw new Error(data.message || 'שגיאה בהתחברות');
       }
   
-      // שמירת הטוקן בפורמט הנכון
+   
       localStorage.setItem('token', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
       if (data.user.role === 'admin') {
@@ -143,15 +143,11 @@ const LoginPage = () => {
           <p className="text-gray-600">התחבר כדי לנהל את משק הבית שלך</p>
         </div>
 
-        {/* Google Login Button */}
-        <button
-          onClick={() => googleLogin()}
-          className="w-full mb-4 py-3 px-4 border border-gray-300 rounded-lg flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50 transition-all"
-          disabled={loading}
-        >
-          <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
-          התחבר עם Google
-        </button>
+        
+       {/* Google Login Button */}
+<div className="mb-6">
+  <GoogleLoginButton />
+</div>
 
         {/* Divider */}
         <div className="relative my-6">
