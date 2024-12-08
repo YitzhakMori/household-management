@@ -98,6 +98,12 @@ const ShoppingList: React.FC = () => {
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <button
+                        onClick={() => window.location.href = '/Home'}
+                        className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
+                    >
+                        חזרה לדף הבית
+                    </button>
                     <div className="text-center">
                         <h1 className="text-4xl font-bold text-white mb-2">רשימת קניות</h1>
                         <p className="text-blue-100">נהל את רשימת הקניות שלך בקלות</p>
@@ -118,7 +124,7 @@ const ShoppingList: React.FC = () => {
                             className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                         />
                         <div className="flex items-center gap-2">
-                            <button 
+                            <button
                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
                                 disabled={quantity <= 1}
@@ -133,7 +139,7 @@ const ShoppingList: React.FC = () => {
                                 min={1}
                                 className="w-20 p-3 border rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <button 
+                            <button
                                 onClick={() => setQuantity(quantity + 1)}
                                 className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-xl font-bold transition-colors"
                             >
@@ -143,8 +149,8 @@ const ShoppingList: React.FC = () => {
                         <button
                             onClick={editingItemId ? handleUpdateItem : handleAddItem}
                             className={`px-8 py-3 rounded-lg text-white font-medium transition-all
-                                ${editingItemId 
-                                    ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                                ${editingItemId
+                                    ? 'bg-gradient-to-r from-green-500 to-green-600'
                                     : 'bg-gradient-to-r from-blue-500 to-purple-600'} 
                                 hover:shadow-lg hover:scale-105`}
                         >
@@ -173,7 +179,7 @@ const ShoppingList: React.FC = () => {
                 {/* Shopping List */}
                 <div className="space-y-4">
                     {items.map((item) => (
-                        <div 
+                        <div
                             key={item._id}
                             className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all p-6"
                         >
