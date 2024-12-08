@@ -18,9 +18,13 @@ import Dashboard from './components/Transaction/Dashboard';
 import EventTable from './components/EventTable';
 import TaskList from './components/TaskList';
 import FriendRequests from './components/FriendRequests';
+import { FinancialProvider } from './components/context/FinancialContext';
+import { EventsProvider } from './components/context/EventsContext';
 
 function App() {
  return (
+  <FinancialProvider>
+    <EventsProvider>
    <ErrorBoundary>
      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
        <Router>
@@ -124,6 +128,8 @@ function App() {
        </Router>
      </GoogleOAuthProvider>
    </ErrorBoundary>
+   </EventsProvider>
+   </FinancialProvider>
  );
 }
 

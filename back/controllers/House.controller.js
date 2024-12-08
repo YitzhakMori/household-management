@@ -46,7 +46,7 @@ export const signup = async (req, res) => {
 		await user.save();
 
 		// jwt
-		generateTokenAndSetCookie(res, user._id);
+		generateTokenAndSetCookie(res, user._id,user.name);
 
 		// await sendVerificationEmail(user.email, verificationToken);
 
@@ -112,7 +112,7 @@ export const login = async (req, res) => {
         }
 
         // יצירת טוקן ושמירתו בעוגיה
-        const token = generateTokenAndSetCookie(res, user._id,user.role); // שמירה בעוגיה והחזרת הטוקן
+        const token = generateTokenAndSetCookie(res, user._id,user.role,user.name); // שמירה בעוגיה והחזרת הטוקן
 
         // עדכון זמן הכניסה האחרון של המשתמש
         user.lastLogin = new Date();
