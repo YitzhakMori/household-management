@@ -137,3 +137,55 @@ export const getTransactions = async (req, res) => {
         res.status(500).json({ error: error.message || "Failed to get Transactions" });
     }
 };
+
+
+// פונקציה לחישוב סך הכל הכנסות עבור החודש הנוכחי
+export const calculateTotalIncome = async (req, res) => {
+  const userId = req.user.id; // הנחה שה-`user` נוסף ע"י המידלוור של האימות (authentication)
+
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+  try {
+    const transactions = await Transaction.find({
+      userId: userId, // מסנן רק את הנתונים של המשתמש המחובר
+      date: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+      type: 'income',
+    });
+
+    const totalIncome = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    res.json({ totalIncome });
+  } catch (error) {
+    console.error('Error calculating total income:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+// פונקציה לחישוב סך הכל הוצאות עבור החודש הנוכחי
+export const calculateTotalExpenses = async (req, res) => {
+  const userId = req.user.id; // הנחה שה-`user` נוסף ע"י המידלוור של האימות (authentication)
+
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+  try {
+    const transactions = await Transaction.find({
+      userId: userId, // מסנן רק את הנתונים של המשתמש המחובר
+      date: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+      type: 'expense',
+    });
+
+    const totalExpenses = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    res.json({ totalExpenses });
+  } catch (error) {
+    console.error('Error calculating total expenses:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

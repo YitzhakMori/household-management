@@ -58,7 +58,6 @@ const LoginPage = () => {
       // שמירת הטוקן בפורמט הנכון
       localStorage.setItem('token', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
-  
       if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
