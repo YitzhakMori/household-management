@@ -9,7 +9,7 @@ const route = express.Router();
 route.get("/check-auth",verifyToken,checkAuth)
 
 // Public routes
-route.post("/signup", signup);
+route.post("/signUp", signup);
 route.post("/login", login);
 route.post("/auth/google", googleAuth);
 route.post("/verify-email", verifyEmail);

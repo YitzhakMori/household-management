@@ -113,3 +113,28 @@ export const updateSavings = async (req, res) => {
     res.status(500).json({ message: 'Error updating savings' });
   }
 };
+
+
+// פונקציה לחישוב סך הכל חסכונות עבור החודש הנוכחי
+export const calculateTotalSavings = async (req, res) => {
+  const userId = req.user.id; // הנחה שה-`user` נוסף ע"י המידלוור של האימות (authentication)
+
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+  try {
+    const savings = await Savings.find({
+      userId: userId, // מסנן רק את הנתונים של המשתמש המחובר
+      date: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    });
+
+    const totalSavings = savings.reduce((sum, saving) => sum + saving.amount, 0);
+    res.json({ totalSavings });
+  } catch (error) {
+    console.error('Error calculating total savings:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

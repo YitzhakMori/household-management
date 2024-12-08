@@ -50,7 +50,7 @@ const Home: React.FC = () => {
       label: 'הוצאות והכנסות', 
       icon: '💰', 
       color: 'bg-orange-100 hover:bg-orange-200 text-orange-800',
-      stats: { count: '₪3,500', text: 'הוצאות החודש' }
+      stats: { count: '₪3,000', text: 'הוצאות החודש' }
     },
   ];
 

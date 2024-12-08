@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TransactionsTable from './TransactionTable';
 import SavingsTable from './SavingsTable';
 import FixedPaymentsTable from './FixedPaymentsTable';
@@ -6,6 +6,72 @@ import Graphs from './Graphs';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'transactions' | 'savings' | 'fixed' | 'graphs'>('transactions');
+  const [financialData, setFinancialData] = useState({
+    totalIncome: 0,
+    totalExpenses: 0,
+    totalSavings: 0,
+    totalFixedPayments: 0,
+  });
+
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      const token = localStorage.getItem('token'); // נניח שהטוקן מאוחסן ב-localStorage
+
+      try {
+        const [incomeRes, expensesRes, savingsRes, fixedPaymentsRes] = await Promise.all([
+          fetch('http://localhost:5001/api/transaction/total-income', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          }),
+          fetch('http://localhost:5001/api/transaction/total-expenses', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          }),
+          fetch('http://localhost:5001/api/savings/total-savings', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          }),
+          fetch('http://localhost:5001/api/fixedPayments/total-fixed-payments', {
+            method: 'GET',
+            
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          })
+        ]);
+
+        if (!incomeRes.ok || !expensesRes.ok || !savingsRes.ok || !fixedPaymentsRes.ok) {
+          throw new Error('Failed to fetch financial data');
+        }
+
+        const incomeData = await incomeRes.json();
+        const expensesData = await expensesRes.json();
+        const savingsData = await savingsRes.json();
+        const fixedPaymentsData = await fixedPaymentsRes.json();
+
+        setFinancialData({
+          totalIncome: incomeData.totalIncome,
+          totalExpenses: expensesData.totalExpenses,
+          totalSavings: savingsData.totalSavings,
+          totalFixedPayments: fixedPaymentsData.totalFixedPayments,
+        });
+      } catch (error) {
+        console.error('Error fetching financial data:', error);
+      }
+    };
+
+    fetchFinancialData();
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -95,19 +161,19 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl shadow p-4 hover:shadow-md transition-shadow">
             <div className="text-sm text-gray-500 mb-1">סה"כ הכנסות החודש</div>
-            <div className="text-2xl font-bold text-green-600">₪12,500</div>
+            <div className="text-2xl font-bold text-green-600">₪{financialData.totalIncome}</div>
           </div>
           <div className="bg-white rounded-xl shadow p-4 hover:shadow-md transition-shadow">
             <div className="text-sm text-gray-500 mb-1">סה"כ הוצאות החודש</div>
-            <div className="text-2xl font-bold text-red-600">₪8,300</div>
+            <div className="text-2xl font-bold text-red-600">₪{financialData.totalExpenses}</div>
           </div>
           <div className="bg-white rounded-xl shadow p-4 hover:shadow-md transition-shadow">
             <div className="text-sm text-gray-500 mb-1">חסכונות</div>
-            <div className="text-2xl font-bold text-blue-600">₪25,000</div>
+            <div className="text-2xl font-bold text-blue-600">₪{financialData.totalSavings}</div>
           </div>
           <div className="bg-white rounded-xl shadow p-4 hover:shadow-md transition-shadow">
             <div className="text-sm text-gray-500 mb-1">תשלומים קבועים</div>
-            <div className="text-2xl font-bold text-purple-600">₪4,200</div>
+            <div className="text-2xl font-bold text-purple-600">₪{financialData.totalFixedPayments}</div>
           </div>
         </div>
       </div>

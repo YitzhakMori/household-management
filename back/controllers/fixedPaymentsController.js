@@ -117,3 +117,28 @@ export const updateFixedPayment = async (req, res) => {
     res.status(500).json({ message: 'Error updating fixed payment' });
   }
 };
+
+
+// פונקציה לחישוב סך הכל תשלומים קבועים עבור החודש הנוכחי
+export const calculateTotalFixedPayments = async (req, res) => {
+  const userId = req.user.id; // הנחה שה-`user` נוסף ע"י המידלוור של האימות (authentication)
+
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+  try {
+    const fixedPayments = await fixedPaymentsSchema.find({
+      userId: userId, // מסנן רק את הנתונים של המשתמש המחובר
+      date: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    });
+
+    const totalFixedPayments = fixedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    res.json({ totalFixedPayments });
+  } catch (error) {
+    console.error('Error calculating total fixed payments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
