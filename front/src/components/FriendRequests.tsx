@@ -118,22 +118,16 @@ const loadFriendRequests = async () => {
     });
 
     const data = await response.json();
-    console.log('Response:', data); // לבדיקה
-    
-    // ודא שיש מערך
-    if (data && Array.isArray(data.requests)) {
-      setFriendRequests(data.requests);
-    } else {
-      setFriendRequests([]);
-    }
+    // יצירת מערך ריק כברירת מחדל אם אין נתונים
+    setFriendRequests(data?.requests || []);
+
   } catch (error) {
     console.error('Error:', error);
-    setFriendRequests([]);
+    setFriendRequests([]); // תמיד יהיה מערך גם במקרה של שגיאה
   } finally {
     setLoading(false);
   }
 };
-
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
@@ -210,7 +204,7 @@ const loadFriendRequests = async () => {
                   className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-colors relative"
                 >
                   <span className="text-2xl">🔔</span>
-                  {!loading && friendRequests.length > 0 && (
+                  {!loading && friendRequests && friendRequests.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-xs">
                       {friendRequests.length}
                     </span>
@@ -228,9 +222,9 @@ const loadFriendRequests = async () => {
                         <div className="p-4 text-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                         </div>
-                      ) : friendRequests.length === 0 ? (
+                      ) : Array.isArray(friendRequests) && friendRequests.length === 0 ? (
                         <p className="text-gray-500 text-sm p-4">אין בקשות חברות ממתינות</p>
-                      ) : (
+                      ) : Array.isArray(friendRequests) ? (
                         friendRequests.map((request) => (
                           <div 
                             key={request._id}
@@ -261,6 +255,8 @@ const loadFriendRequests = async () => {
                             </div>
                           </div>
                         ))
+                      ) : (
+                        <p className="text-gray-500 text-sm p-4">שגיאה בטעינת בקשות</p>
                       )}
                     </div>
                   </div>
@@ -345,5 +341,5 @@ const loadFriendRequests = async () => {
         </div>
       )}
     </div>
-   )};
+   );}
 export default Home;
