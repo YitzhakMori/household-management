@@ -5,12 +5,13 @@ import {
   updateShoppingItem,
   deleteShoppingItem,
 } from "../api/shoppingApi";
-
 interface ShoppingItem {
   _id: string;
   name: string;
   quantity: number;
-}
+  isPurchased: boolean;
+  itemGroupId: string | null;
+ }
 
 const ShoppingList: React.FC = () => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
@@ -46,49 +47,44 @@ const ShoppingList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const newItem: ShoppingItem = await addShoppingItem(
-        name.trim(),
-        quantity
-      );
-      setItems([...items, newItem]);
-      setName("");
-      setQuantity(1);
+      const newItem = await addShoppingItem(name.trim(), quantity);
+      if (newItem) {
+        setItems([...items, newItem]);
+        setName("");
+        setQuantity(1);
+      }
     } catch (error) {
       setError("שגיאה בהוספת מוצר.");
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleUpdateItem = async () => {
+   };
+   
+   const handleUpdateItem = async () => {
     if (!editingItemId || !name.trim() || quantity < 1) {
       alert("אנא מלא את כל השדות.");
       return;
     }
     try {
-      setLoading(true);
+      setLoading(true); 
       setError(null);
-      const updatedItem: ShoppingItem = await updateShoppingItem(
-        editingItemId,
-        name.trim(),
-        quantity
-      );
-      setItems((prevItems) =>
-        prevItems.map((item) =>
+      const updatedItem = await updateShoppingItem(editingItemId, name.trim(), quantity);
+      if (updatedItem) {
+        setItems(prevItems => prevItems.map(item => 
           item._id === editingItemId ? { ...item, ...updatedItem } : item
-        )
-      );
-      setEditingItemId(null);
-      setName("");
-      setQuantity(1);
+        ));
+        setEditingItemId(null);
+        setName("");
+        setQuantity(1);
+      }
     } catch (error) {
       setError("שגיאה בעדכון מוצר.");
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+   };
 
   const handleDeleteItem = async (itemId: string) => {
     try {
@@ -208,11 +204,12 @@ const ShoppingList: React.FC = () => {
                     {item.quantity} יח׳
                   </span>
                   <button
-                    onClick={() => {
-                      setName(item.name);
-                      setQuantity(item.quantity);
-                      setEditingItemId(item._id);
-                    }}
+                   onClick={() => {
+                    const itemWithId = item as Required<ShoppingItem>; // וודא שיש _id
+                    setName(itemWithId.name);
+                    setQuantity(itemWithId.quantity);
+                    setEditingItemId(itemWithId._id);
+                  }}
                     className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-full transition-colors"
                   >
                     <span className="text-xl">✏</span>

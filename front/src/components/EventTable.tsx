@@ -36,22 +36,26 @@ const EventTable = () => {
   const handleAddEvent = async (event: Event) => {
     try {
       const newEvent = await addEvent(event);
-      setEvents([...events, newEvent]);
-      setIsModalOpen(false);
-      showAlert('האירוע נוסף בהצלחה', 'success');
+      if (newEvent) {
+        setEvents([...events, newEvent]);
+        setIsModalOpen(false);
+        showAlert('האירוע נוסף בהצלחה', 'success');
+      }
     } catch (error) {
       console.error('Error adding event:', error);
       showAlert('שגיאה בהוספת האירוע', 'error');
     }
-  };
+   };
 
   const handleUpdateEvent = async (event: Event) => {
     try {
       const updatedEvent = await updateEvent(event);
+      if (updatedEvent) {
       setEvents(events.map((e) => (e._id === event._id ? updatedEvent : e)));
       setSelectedEvent(undefined);
       setIsModalOpen(false);
       showAlert('האירוע עודכן בהצלחה', 'success');
+      }
     } catch (error) {
       console.error('Error updating event:', error);
       showAlert('שגיאה בעדכון האירוע', 'error');

@@ -21,9 +21,11 @@ import FriendRequests from './components/FriendRequests';
 import { FinancialProvider } from './components/context/FinancialContext';
 import { EventsProvider } from './components/context/EventsContext';
 import { ShoppingProvider } from "./components/context/ShoppingContext";
+import { AuthProvider } from './components/context/AuthContext';
 
 function App() {
  return (
+  <AuthProvider> 
   <FinancialProvider>
     <ShoppingProvider>
     <EventsProvider>
@@ -134,6 +136,7 @@ function App() {
    </EventsProvider>
    </ShoppingProvider>
    </FinancialProvider>
+   </AuthProvider> 
  );
 }
 

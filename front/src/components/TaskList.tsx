@@ -51,61 +51,64 @@ const TaskList: React.FC = () => {
     loadTasks();
   }, []);
 
-  const handleAddTask = async () => {
-    if (!title.trim()) {
-      showAlert("אנא הכנס שם משימה", "error");
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      const newTask = await addTask(
-        title,
-        description,
-        dueDate || undefined,
-        status
-      );
+  // handleAddTask
+const handleAddTask = async () => {
+  if (!title.trim()) {
+    showAlert("אנא הכנס שם משימה", "error");
+    return;
+  }
+  try {
+    setLoading(true);
+    setError(null);
+    const newTask = await addTask(
+      title,
+      description,
+      dueDate || undefined,
+      status
+    );
+    if (newTask) {
       setTasks([...tasks, newTask]);
       resetForm();
       showAlert("המשימה נוספה בהצלחה", "success");
-    } catch (error) {
-      showAlert("שגיאה בהוספת משימה", "error");
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const handleUpdateTask = async () => {
-    if (!editingTaskId || !title.trim()) {
-      showAlert("אנא מלא את כל השדות", "error");
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const updatedTask = await updateTask(
-        editingTaskId,
-        title,
-        description,
-        dueDate || undefined,
-        status
-      );
-      
-      setTasks(prevTasks => prevTasks.map(task => 
+  } catch (error) {
+    showAlert("שגיאה בהוספת משימה", "error");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+ };
+ 
+ // handleUpdateTask
+ const handleUpdateTask = async () => {
+  if (!editingTaskId || !title.trim()) {
+    showAlert("אנא מלא את כל השדות", "error");
+    return;
+  }
+  try {
+    setLoading(true); 
+    setError(null);
+    const updatedTask = await updateTask(
+      editingTaskId,
+      title,
+      description, 
+      dueDate || undefined,
+      status
+    );
+    if (updatedTask) {
+      setTasks(prevTasks => prevTasks.map(task =>
         task._id === editingTaskId ? updatedTask : task
       ));
-      
       resetForm();
-      showAlert("המשימה עודכנה בהצלחה", "success");
-    } catch (error) {
-      showAlert("שגיאה בעדכון משימה", "error");
-      console.error(error);
-    } finally {
-      setLoading(false);
+      showAlert("המשימה עודכנה בהצלחה", "success"); 
     }
-  };
+  } catch (error) {
+    showAlert("שגיאה בעדכון משימה", "error");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+ };
 
   const handleDeleteTask = async (taskId: string) => {
     try {
