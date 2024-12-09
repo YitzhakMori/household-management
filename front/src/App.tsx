@@ -20,10 +20,12 @@ import TaskList from './components/TaskList';
 import FriendRequests from './components/FriendRequests';
 import { FinancialProvider } from './components/context/FinancialContext';
 import { EventsProvider } from './components/context/EventsContext';
+import { ShoppingProvider } from "./components/context/ShoppingContext";
 
 function App() {
  return (
   <FinancialProvider>
+    <ShoppingProvider>
     <EventsProvider>
    <ErrorBoundary>
      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
@@ -93,6 +95,7 @@ function App() {
                  <ShoppingList />
                </ErrorBoundary>
              </ProtectedRoute>
+             
            } />
            
            <Route path="/tasks" element={
@@ -129,6 +132,7 @@ function App() {
      </GoogleOAuthProvider>
    </ErrorBoundary>
    </EventsProvider>
+   </ShoppingProvider>
    </FinancialProvider>
  );
 }
