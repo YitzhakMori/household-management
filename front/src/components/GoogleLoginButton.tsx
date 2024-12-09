@@ -62,8 +62,8 @@ const GoogleLoginButton = () => {
     },
     flow: 'auth-code',
     scope: 'email profile openid https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
-    ux_mode: 'popup',  // הוסף את זה
-    redirect_uri: 'http://localhost:3000'  // הוספנו את זה
+    ux_mode: 'popup',  
+    redirect_uri: 'http://localhost:3000' 
 
 
   });
@@ -99,7 +99,7 @@ const GoogleLoginButton = () => {
           />
         </svg>
       )}
-      {loading ? 'מתחבר...' : 'התחבר עם Google'}
+      {loading ? 'מתחבר...' : 'Google התחבר עם'}
       {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
     </button>
   );
