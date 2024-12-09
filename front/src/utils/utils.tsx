@@ -3,20 +3,28 @@ export const getUserIdFromToken = (): { userId: string; name: string } | null =>
     if (!token) return null;
 
     try {
-        // פענוח ה-payload מתוך הטוקן
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const base64Url = token.split('.')[1];
+        if (!base64Url) throw new Error("Invalid token format");
+
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+
+        const payload = JSON.parse(jsonPayload);
 
         // בדיקה לראות את ה-payload המפוענח (לא חובה בייצור)
         console.log("Decoded payload:", payload);
 
-        // החזרת userId ושם המשתמש
         return {
-            userId: payload.user_id || null, // ודא שהמפתח הוא לפי מבנה הטוקן שלך
-            name: payload.name || '' // ודא שהמפתח הוא לפי מבנה הטוקן שלך
+            userId: payload.user_id || null,
+            name: payload.name || '' // תומך בעברית
         };
     } catch (error) {
         console.error("Failed to decode token:", error);
         return null;
     }
 };
-export default getUserIdFromToken

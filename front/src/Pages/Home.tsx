@@ -5,6 +5,7 @@ import { getUserIdFromToken } from '../utils/utils';
 import { getFriendRequests, acceptFriendRequest, rejectFriendRequest } from '../api/friendRequests';
 import { useFinancialContext } from '../components/context/FinancialContext';
 import { useEvents } from '../components/context/EventsContext';
+import { useShopping } from "../components/context/ShoppingContext";
 
 // הוספת הממשק של בקשת חבר
 interface FriendRequest {
@@ -16,6 +17,7 @@ interface FriendRequest {
 }
 
 const Home: React.FC = () => {
+  const { itemCount } = useShopping();
   const { financialData } = useFinancialContext(); // שימוש ב-context לניהול נתונים פיננסיים
   const { getUpcomingWeekEventsCount } = useEvents();
   const [userName, setUserName] = useState<string | null>(null);
@@ -89,7 +91,7 @@ const Home: React.FC = () => {
       label: 'קניות',
       icon: '🛒',
       color: 'bg-blue-100 hover:bg-blue-200 text-blue-800',
-      stats: { count: '8', text: 'פריטים ברשימה' },
+      stats: { count: itemCount, text: "פריטים ברשימה" },
     },
     {
       path: '/tasks',
@@ -145,7 +147,7 @@ const Home: React.FC = () => {
             <div className="text-white mb-6 md:mb-0">
               <h1 className="text-4xl font-bold mb-2">ניהול משק בית</h1>
               <p className="text-blue-100">
-                ברוך הבא{userName ? `, ${userName}` : ''}! נהל את משק הבית שלך בקלות ויעילות
+              <p dir="rtl">ברוך הבא{userName ? `, ${userName}` : ''}!</p>נהל את משק הבית שלך בקלות ויעילות
               </p>
             </div>
             <div className="flex items-center gap-4">
