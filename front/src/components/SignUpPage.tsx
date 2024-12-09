@@ -172,14 +172,16 @@ const SignUpPage = () => {
 
           {/* Login Link */}
           <div className="text-center text-sm">
-            <span className="text-gray-500">כבר יש לך חשבון?</span>
-            <button
+          <button
               type="button"
               onClick={() => navigate('/login')}
               className="text-blue-600 hover:text-blue-800 font-medium mr-2"
             >
               התחבר כאן
             </button>
+          <span>?</span>
+            <span className="text-gray-500">כבר יש לך חשבון</span>
+            
           </div>
         </form>
       </div>

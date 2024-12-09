@@ -220,21 +220,24 @@ const LoginPage = () => {
           {/* Links */}
           <div className="flex flex-col items-center space-y-2 text-sm">
             <div className="flex items-center space-x-4 space-x-reverse">
-              <span className="text-gray-500">אין לך חשבון?</span>
-              <button
+            <button
                 type="button"
                 onClick={() => navigate('/signUp')}
                 className="text-blue-600 hover:text-blue-800 font-medium"
               >
+
                 הרשם עכשיו
               </button>
+            <span className="text-gray-500"> ?אין לך חשבון</span>
+
+              
             </div>
             <button
               type="button"
               onClick={() => navigate('/forgot-password')}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-blue-600 hover:text-blue-800 font-medium"
             >
-              שכחת סיסמה?
+              שכחתי סיסמה
             </button>
           </div>
         </form>
