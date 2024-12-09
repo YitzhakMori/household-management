@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Event } from '../../interfaces/Event';
 import { fetchEvents } from '../../api/eventsApi';
-
+import { useAuth } from './AuthContext';
 interface EventsContextProps {
   events: Event[];
   setEvents: React.Dispatch<React.SetStateAction<Event[]>>;
@@ -12,6 +12,8 @@ interface EventsContextProps {
 const EventsContext = createContext<EventsContextProps | undefined>(undefined);
 
 export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+
   const [events, setEvents] = useState<Event[]>([]);
 
   const loadEvents = async () => {
@@ -20,8 +22,13 @@ export const EventsProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   useEffect(() => {
-    loadEvents();
-  }, []);
+    if (isLoggedIn) {
+      loadEvents();
+    } else {
+      setEvents([]); // ניקוי האירועים בעת התנתקות
+    }
+  }, [isLoggedIn]);
+
 
   const getUpcomingWeekEventsCount = () => {
     const oneWeekFromNow = new Date();

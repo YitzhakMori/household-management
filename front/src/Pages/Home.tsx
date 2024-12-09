@@ -123,8 +123,8 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Alert */}
+<div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
+  {/* Alert */}
       {alert && (
         <div
           className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 ${
@@ -299,24 +299,7 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-white border-t mt-auto py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center space-x-8 space-x-reverse mb-6">
-            <button className="flex items-center text-gray-600 hover:text-blue-600 hover:scale-105 transition-all duration-300">
-              <span className="text-xl ml-2">⚙️</span>
-              <span>הגדרות</span>
-            </button>
-            <button className="flex items-center text-gray-600 hover:text-blue-600 hover:scale-105 transition-all duration-300">
-              <span className="text-xl ml-2">📝</span>
-              <span>מדריך</span>
-            </button>
-          </div>
-          <div className="text-center text-sm text-gray-500 hover:text-gray-700 transition-colors duration-300">
-            <p>© {new Date().getFullYear()} ניהול משק בית - גרסה 1.0</p>
-          </div>
-        </div>
-      </footer>
+     
     </div>
   );
 };

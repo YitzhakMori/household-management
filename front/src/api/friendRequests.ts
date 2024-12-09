@@ -1,61 +1,119 @@
 const BASE_URL = 'http://localhost:5001/api/friends';
 
-
 interface FriendRequestData {
-    recipientEmail: string;
+ recipientEmail: string;
 }
 
+interface FriendRequest {
+ _id: string;
+ sender: {
+   name: string;
+   email: string;
+ };
+}
+
+const getToken = () => localStorage.getItem('token');
+
 export const sendFriendRequest = async (data: FriendRequestData) => {
-    const response = await fetch(`${BASE_URL}/request`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(data),
-    });
+ const token = getToken();
+ if (!token) return null;
 
-    const result = await response.json();
-    return result;
+ try {
+   const response = await fetch(`${BASE_URL}/request`, {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json',
+       'Authorization': `Bearer ${token}`,
+     },
+     body: JSON.stringify(data),
+   });
+
+   if (!response.ok) {
+     if (response.status === 401) return null;
+     throw new Error('Network response was not ok');
+   }
+
+   return await response.json();
+ } catch (error) {
+   console.error('Error sending friend request:', error);
+   return null;
+ }
 };
 
-export const getFriendRequests = async () => {
-    const response = await fetch(`${BASE_URL}/requests`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-    });
+export const getFriendRequests = async (): Promise<FriendRequest[]> => {
+ const token = getToken();
+ if (!token) return [];
 
-    const result = await response.json();
-    return result;
+ try {
+   const response = await fetch(`${BASE_URL}/requests`, {
+     method: 'GET',
+     headers: {
+       'Content-Type': 'application/json',
+       'Authorization': `Bearer ${token}`,
+     },
+   });
+
+   if (!response.ok) {
+     if (response.status === 401) return [];
+     throw new Error('Network response was not ok');
+   }
+
+   const result = await response.json();
+   return result.requests || [];
+ } catch (error) {
+   console.error('Error getting friend requests:', error);
+   return [];
+ }
 };
 
-export const acceptFriendRequest = async (requestId: string) => {
-    const response = await fetch(`${BASE_URL}/approve`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ requestId }),
-    });
+export const acceptFriendRequest = async (requestId: string): Promise<boolean> => {
+ const token = getToken();
+ if (!token) return false;
 
-    const result = await response.json();
-    return result;
+ try {
+   const response = await fetch(`${BASE_URL}/approve`, {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json',
+       'Authorization': `Bearer ${token}`,
+     },
+     body: JSON.stringify({ requestId }),
+   });
+
+   if (!response.ok) {
+     if (response.status === 401) return false;
+     throw new Error('Network response was not ok');
+   }
+
+   return true;
+ } catch (error) {
+   console.error('Error accepting friend request:', error);
+   return false;
+ }
 };
 
-export const rejectFriendRequest = async (requestId: string) => {
-    const response = await fetch(`${BASE_URL}/reject`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ requestId }),
-    });
+export const rejectFriendRequest = async (requestId: string): Promise<boolean> => {
+ const token = getToken();
+ if (!token) return false;
 
-    const result = await response.json();
-    return result;
+ try {
+   const response = await fetch(`${BASE_URL}/reject`, {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json',
+       'Authorization': `Bearer ${token}`,
+     },
+     body: JSON.stringify({ requestId }),
+   });
+
+   if (!response.ok) {
+     if (response.status === 401) return false;
+     throw new Error('Network response was not ok');
+   }
+
+   return true;
+ } catch (error) {
+   console.error('Error rejecting friend request:', error);
+   return false;
+ }
 };

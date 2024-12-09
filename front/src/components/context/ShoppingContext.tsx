@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { fetchShoppingItems } from "../../api/shoppingApi";
+import {useAuth} from './AuthContext'
 
 interface ShoppingItem {
-  _id: string;
+  _id?: string;
   name: string;
   quantity: number;
 }
@@ -16,6 +17,8 @@ interface ShoppingContextType {
 const ShoppingContext = createContext<ShoppingContextType | undefined>(undefined);
 
 export const ShoppingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { isLoggedIn } = useAuth();
+
   const [items, setItems] = useState<ShoppingItem[]>([]);
 
   const reloadItems = async () => {
@@ -28,8 +31,13 @@ export const ShoppingProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   useEffect(() => {
-    reloadItems();
-  }, []);
+    if (isLoggedIn) {
+      reloadItems();
+    } else {
+      setItems([]); // ניקוי פריטי הקניות
+    }
+  }, [isLoggedIn]);
+
 
   return (
     <ShoppingContext.Provider value={{ items, itemCount: items.length, reloadItems }}>
