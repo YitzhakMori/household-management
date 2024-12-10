@@ -88,6 +88,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/friends', friendRequestRoutes);
+
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);

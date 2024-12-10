@@ -1,13 +1,15 @@
-
 import React, { useEffect, useState } from "react";
-import { Task, fetchAllTasks, addTask, updateTask, deleteTask } from "../api/taskApi";
+import { Task, TaskResponse, fetchAllTasks, addTask, updateTask, deleteTask } from "../api/taskApi";
 
 const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [friends, setFriends] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [status, setStatus] = useState<string>("Open");
+  const [assignee, setAssignee] = useState<string>("");
+  const [priority, setPriority] = useState<string>("Medium");
   const [loading, setLoading] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +25,8 @@ const TaskList: React.FC = () => {
     setDescription("");
     setDueDate("");
     setStatus("Open");
+    setAssignee("");
+    setPriority("Medium");
     setEditingTaskId(null);
   };
 
@@ -36,8 +40,9 @@ const TaskList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const fetchedTasks = await fetchAllTasks();
-      setTasks(fetchedTasks);
+      const response: TaskResponse = await fetchAllTasks();
+      setTasks(response.tasks);
+      setFriends(response.friends);
     } catch (error) {
       setError("שגיאה בטעינת רשימת המשימות.");
       showAlert("שגיאה בטעינת המשימות", "error");
@@ -51,77 +56,81 @@ const TaskList: React.FC = () => {
     loadTasks();
   }, []);
 
-  // handleAddTask
-const handleAddTask = async () => {
-  if (!title.trim()) {
-    showAlert("אנא הכנס שם משימה", "error");
-    return;
-  }
-  try {
-    setLoading(true);
-    setError(null);
-    const newTask = await addTask(
-      title,
-      description,
-      dueDate || undefined,
-      status
-    );
-    if (newTask) {
-      setTasks([...tasks, newTask]);
-      resetForm();
-      showAlert("המשימה נוספה בהצלחה", "success");
+  const handleAddTask = async () => {
+    if (!title.trim()) {
+      showAlert("אנא הכנס שם משימה", "error");
+      return;
     }
-  } catch (error) {
-    showAlert("שגיאה בהוספת משימה", "error");
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
- };
- 
- // handleUpdateTask
- const handleUpdateTask = async () => {
-  if (!editingTaskId || !title.trim()) {
-    showAlert("אנא מלא את כל השדות", "error");
-    return;
-  }
-  try {
-    setLoading(true); 
-    setError(null);
-    const updatedTask = await updateTask(
-      editingTaskId,
-      title,
-      description, 
-      dueDate || undefined,
-      status
-    );
-    if (updatedTask) {
-      setTasks(prevTasks => prevTasks.map(task =>
-        task._id === editingTaskId ? updatedTask : task
-      ));
-      resetForm();
-      showAlert("המשימה עודכנה בהצלחה", "success"); 
-    }
-  } catch (error) {
-    showAlert("שגיאה בעדכון משימה", "error");
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
- };
-
-  const handleDeleteTask = async (taskId: string) => {
     try {
       setLoading(true);
       setError(null);
-      await deleteTask(taskId);
-      setTasks(tasks.filter(task => task._id !== taskId));
-      showAlert("המשימה נמחקה בהצלחה", "success");
+      const newTask = await addTask(
+        title,
+        description,
+        dueDate || undefined,
+        status,
+        assignee || undefined,
+        priority
+      );
+      if (newTask) {
+        setTasks([...tasks, newTask]);
+        resetForm();
+        showAlert("המשימה נוספה בהצלחה", "success");
+      }
     } catch (error) {
-      showAlert("שגיאה במחיקת משימה", "error");
+      showAlert("שגיאה בהוספת משימה", "error");
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateTask = async () => {
+    if (!editingTaskId || !title.trim()) {
+      showAlert("אנא מלא את כל השדות", "error");
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedTask = await updateTask(
+        editingTaskId,
+        title,
+        description,
+        dueDate || undefined,
+        status,
+        assignee || undefined,
+        priority
+      );
+      if (updatedTask) {
+        setTasks(prevTasks => prevTasks.map(task =>
+          task._id === editingTaskId ? updatedTask : task
+        ));
+        resetForm();
+        showAlert("המשימה עודכנה בהצלחה", "success");
+      }
+    } catch (error) {
+      showAlert("שגיאה בעדכון משימה", "error");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק משימה זו?')) {
+      try {
+        setLoading(true);
+        setError(null);
+        await deleteTask(taskId);
+        setTasks(tasks.filter(task => task._id !== taskId));
+        showAlert("המשימה נמחקה בהצלחה", "success");
+      } catch (error) {
+        showAlert("שגיאה במחיקת משימה", "error");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -140,6 +149,26 @@ const handleAddTask = async () => {
       case 'In Progress': return 'בתהליך';
       case 'Completed': return 'הושלם';
       default: return status;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'Low': return 'bg-green-100 text-green-800';
+      case 'Medium': return 'bg-blue-100 text-blue-800';
+      case 'High': return 'bg-yellow-100 text-yellow-800';
+      case 'Urgent': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityText = (priority: string) => {
+    switch (priority) {
+      case 'Low': return 'נמוכה';
+      case 'Medium': return 'בינונית';
+      case 'High': return 'גבוהה';
+      case 'Urgent': return 'דחופה';
+      default: return priority;
     }
   };
 
@@ -162,17 +191,11 @@ const handleAddTask = async () => {
 
       {/* Alert */}
       {alert && (
-        <div 
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 
-            ${alert.type === 'success' 
-              ? 'bg-green-100 text-green-800 border border-green-200' 
-              : 'bg-red-100 text-red-800 border border-red-200'
-            }`}
-        >
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 
+          ${alert.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' 
+          : 'bg-red-100 text-red-800 border border-red-200'}`}>
           <div className="flex items-center gap-2">
-            <span className="text-xl">
-              {alert.type === 'success' ? '✓' : '⚠️'}
-            </span>
+            <span className="text-xl">{alert.type === 'success' ? '✓' : '⚠️'}</span>
             <span className="font-medium">{alert.message}</span>
           </div>
         </div>
@@ -196,22 +219,49 @@ const handleAddTask = async () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
+
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="תיאור המשימה"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all mb-4 h-24 resize-none"
           />
-          <div className="flex flex-col md:flex-row gap-4">
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full md:w-48 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             >
               <option value="Open">פתוח</option>
               <option value="In Progress">בתהליך</option>
               <option value="Completed">הושלם</option>
             </select>
+
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              <option value="Low">נמוכה</option>
+              <option value="Medium">בינונית</option>
+              <option value="High">גבוהה</option>
+              <option value="Urgent">דחופה</option>
+            </select>
+
+            <select
+              value={assignee}
+              onChange={(e) => setAssignee(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              <option value="">ללא משתמש מוקצה</option>
+              {friends.map((friend) => (
+                <option key={friend} value={friend}>
+                  {friend}
+                </option>
+              ))}
+            </select>
+
             <button
               onClick={editingTaskId ? handleUpdateTask : handleAddTask}
               className={`px-6 py-3 text-white font-medium rounded-lg transition-all
@@ -243,9 +293,21 @@ const handleAddTask = async () => {
                       <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(task.status || 'Open')}`}>
                         {getStatusText(task.status || 'Open')}
                       </span>
+                      
+                      <span className={`px-3 py-1 rounded-full text-sm ${getPriorityColor(task.priority || 'Medium')}`}>
+                        {getPriorityText(task.priority || 'Medium')}
+                      </span>
+
                       {task.dueDate && (
                         <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
                           {formatDate(task.dueDate)}
+                        </span>
+                      )}
+
+                      {task.assignee && (
+                        <span className="px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800 flex items-center gap-1">
+                          <span>👤</span>
+                          {task.assignee}
                         </span>
                       )}
                     </div>
@@ -257,6 +319,8 @@ const handleAddTask = async () => {
                         setDescription(task.description || "");
                         setDueDate(formatDate(task.dueDate));
                         setStatus(task.status || "Open");
+                        setPriority(task.priority || "Medium");
+                        setAssignee(task.assignee || "");
                         setEditingTaskId(task._id);
                       }}
                       className="px-4 py-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
@@ -274,6 +338,7 @@ const handleAddTask = async () => {
               </div>
             ))
           ) : (
+            
             <div className="text-center py-12 bg-white rounded-xl shadow-lg">
               <p className="text-gray-500">אין משימות להצגה</p>
             </div>

@@ -4,6 +4,7 @@ import AddFriend from '../components/AddFriend';
 import { getUserIdFromToken } from '../utils/utils';
 import { makeAuthenticatedRequest } from '../utils/api';
 import { handleAuthError } from '../utils/authInterceptor';
+
 interface FriendRequest {
   _id: string;
   sender: {
@@ -91,10 +92,11 @@ const Home: React.FC = () => {
   ];
 
   useEffect(() => {
-    const user = getUserIdFromToken(); // הפונקציה מחזירה אובייקט או null
+    const user = getUserIdFromToken();
     if (user) {
-      setUserId(user.userId); // שליפת userId בלבד והגדרת state
-      setUserName(user.name); // שליפת name בלבד והגדרת state
+      setUserId(user.userId);
+      setUserName(user.name);
+      loadFriendRequests();
     }
   }, []);
 
@@ -103,45 +105,41 @@ const Home: React.FC = () => {
     setTimeout(() => setAlert(null), 3000);
   };
 
+  const loadFriendRequests = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-// תיקון הפונקציה
+      const response = await fetch('http://localhost:5001/api/friends/requests', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
 
+      const data = await response.json();
+      console.log('Friend requests data:', data);
+      setFriendRequests(data?.requests || []);
 
-const loadFriendRequests = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const response = await fetch('http://localhost:5001/api/friends/requests', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const data = await response.json();
-    // יצירת מערך ריק כברירת מחדל אם אין נתונים
-    setFriendRequests(data?.requests || []);
-
-  } catch (error) {
-    console.error('Error:', error);
-    setFriendRequests([]); // תמיד יהיה מערך גם במקרה של שגיאה
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      console.error('Error loading friend requests:', error);
+      setFriendRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAcceptRequest = async (requestId: string) => {
     try {
-      await makeAuthenticatedRequest('http://localhost:5001/api/friends/accept', {
+      await makeAuthenticatedRequest('http://localhost:5001/api/friends/approve', {
         method: 'POST',
-        body: JSON.stringify({ requestId })
+        body: JSON.stringify({ requestId }),
+        credentials: 'include'
       });
       
-      setFriendRequests(prevRequests => 
-        prevRequests.filter(request => request._id !== requestId)
-      );
+      await loadFriendRequests();
       showAlert('בקשת החברות אושרה בהצלחה', 'success');
     } catch (error) {
       handleAuthError(error);
@@ -153,12 +151,11 @@ const loadFriendRequests = async () => {
     try {
       await makeAuthenticatedRequest('http://localhost:5001/api/friends/reject', {
         method: 'POST',
-        body: JSON.stringify({ requestId })
+        body: JSON.stringify({ requestId }),
+        credentials: 'include'
       });
       
-      setFriendRequests(prevRequests => 
-        prevRequests.filter(request => request._id !== requestId)
-      );
+      await loadFriendRequests();
       showAlert('בקשת החברות נדחתה', 'success');
     } catch (error) {
       handleAuthError(error);
@@ -197,7 +194,7 @@ const loadFriendRequests = async () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-white mb-6 md:mb-0">
               <h1 className="text-4xl font-bold mb-2">ניהול משק בית</h1>
-              <p className="text-blue-100">ברוך הבא! נהל את משק הבית שלך בקלות ויעילות</p>
+              <p className="text-blue-100">ברוך הבא {userName}! נהל את משק הבית שלך בקלות ויעילות</p>
             </div>
             <div className="flex items-center gap-4">
               {/* Friend Requests Dropdown */}
@@ -338,7 +335,10 @@ const loadFriendRequests = async () => {
               >
                 ×
               </button>
-              {userId && <AddFriend onSuccess={() => setShowAddFriendModal(false)} />}
+              {userId && <AddFriend onSuccess={() => {
+                setShowAddFriendModal(false);
+                loadFriendRequests();
+              }} />}
             </div>
           </div>
         </div>

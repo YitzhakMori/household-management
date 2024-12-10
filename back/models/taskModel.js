@@ -14,13 +14,10 @@ const taskSchema = new mongoose.Schema(
         },
         description: {
             type: String,
-            // required: false
-            default: "", // שדה אופציונלי
-
+            default: "", 
         },
         dueDate: {
             type: Date,
-            // required: false
             default: null,
 
         },
@@ -30,10 +27,13 @@ const taskSchema = new mongoose.Schema(
             default: 'Open'
         },
         assignee: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User', // הפניה לטבלת המשתמשים
-            // required: false,
+            type: String, 
             default: null
+        },
+        priority: {
+            type: String,
+            enum: ['Low', 'Medium', 'High', 'Urgent'],
+            default: 'Medium'
         },
         taskGroupId: {
             type: mongoose.Schema.Types.ObjectId, 

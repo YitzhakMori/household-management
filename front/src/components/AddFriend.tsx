@@ -33,26 +33,36 @@ const AddFriend: React.FC<AddFriendProps> = ({ onSuccess }) => {
     setMessage(null);
 
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/add', {
+      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/request', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ recipientEmail: email })
       });
 
-      setMessage({ text: 'בקשת החברות נשלחה בהצלחה', type: 'success' });
-      setEmail('');
-      
-      // קריאה ל-callback אם הוא קיים
-      if (onSuccess) {
-        setTimeout(onSuccess, 1500); // מחכה 1.5 שניות לפני סגירת המודל
+      if (response.success || response.message) {
+        setMessage({ text: response.message || 'בקשת החברות נשלחה בהצלחה', type: 'success' });
+        setEmail('');
+        
+        if (onSuccess) {
+          setTimeout(onSuccess, 1500);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       handleAuthError(error);
-      setMessage({ 
-        text: error instanceof Error ? error.message : 'שגיאה בשליחת בקשת החברות',
+      setMessage({
+        text: error.message || 'שגיאה בשליחת בקשת החברות',
         type: 'error'
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleAddFriend();
     }
   };
 
@@ -69,6 +79,7 @@ const AddFriend: React.FC<AddFriendProps> = ({ onSuccess }) => {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="הכנס את המייל של החבר"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           disabled={loading}

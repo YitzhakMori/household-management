@@ -56,13 +56,16 @@ export const sendFriendRequest = async (req, res) => {
 export const getFriendRequests = async (req, res) => {
     try {
         const userId = req.user.id;
-        const friendRequests = await FriendRequest.find({ recipient: userId, status: 'pending' })
-            .populate('sender', 'name email')
-            .exec();
+        const friendRequests = await FriendRequest.find({ 
+            recipient: userId, 
+            status: 'pending' 
+        })
+        .populate('sender', 'name email')
+        .exec();
 
         res.status(200).json({
             success: true,
-            requests:  []// תמיד יהיה מערך, אפילו ריק
+            requests: friendRequests  // החזרת הבקשות האמיתיות במקום מערך ריק
         });
     } catch (error) {
         res.status(500).json({
