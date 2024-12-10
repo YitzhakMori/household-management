@@ -4,59 +4,76 @@ import mongoose from "mongoose";
 
 export const addTask = async (req, res) => {
     try {
-        const {title, description, dueDate, status, assignee} = req.body;
+        const {title, description, dueDate, status, assignee, priority} = req.body;
+        console.log('Received task data:', req.body);
 
         const taskGroupId = new mongoose.Types.ObjectId();
 
-        if (!title ){
+        if (!title) {
             return res.status(400).json({error: "שדה הכותרת הוא חובה"});
         }
+
         const userId = req.user.id;
         if (!req.user || !req.user.id) {
             return res.status(401).json({ error: "User authentication failed" });
         }
-        
+
+        // אם יש assignee, וודא שהוא נמצא ברשימת החברים
+        if (assignee) {
+            const user = await User.findById(userId);
+            if (!user || !user.friends.includes(assignee)) {
+                return res.status(400).json({ error: "המשתמש המוקצה חייב להיות חבר" });
+            }
+        }
         
         const newTask = await Task.create({
+            userId,
             title,
-            description,
-            dueDate,
-            status,
-            assignee,
-            taskGroupId,
-            userId
+            description: description || "",
+            dueDate: dueDate || null,
+            status: status || "Open",
+            assignee: assignee || null,
+            priority: priority || "Medium",
+            taskGroupId
         });
-        const friendEmails = req.user.friends; // אימיילים של חברים
-        if (!friendEmails || friendEmails.length === 0) {
-            return res.status(201).json(newTask); // אם אין חברים, מחזירים רק את המשימה שנוצרה
+
+        // עדכון המשימה אצל החברים
+        if (req.user.friends && req.user.friends.length > 0) {
+            const friends = await User.find({ email: { $in: req.user.friends } });
+            const tasksToAdd = friends.map(friend => ({
+                userId: friend._id,
+                title,
+                description: description || "",
+                dueDate: dueDate || null,
+                status: status || "Open",
+                assignee: assignee || null,
+                priority: priority || "Medium",
+                taskGroupId
+            }));
+
+            if (tasksToAdd.length > 0) {
+                await Task.insertMany(tasksToAdd);
+            }
         }
-        const friends = await User.find({ email: {$in: friendEmails}})
-        const tasksToAdd = friends.map(friend => ({
-            title,
-            description,
-            dueDate,
-            status,
-            assignee,
-            taskGroupId,
-            userId: friend._id
-        }));
-        if (tasksToAdd.length > 0) {
-            await Task.insertMany(tasksToAdd); // הוספת המשימות עבור החברים
-        };
+
         res.status(201).json(newTask);
-    }catch (error) {
-        return res.status(500).json({ error: error.message || "שגיאה ביצירת משימה" });
+    } catch (error) {
+        console.error('Error in addTask:', error);
+        return res.status(500).json({ 
+            error: error.message || "שגיאה ביצירת משימה"
+        });
     }
-    
-}
+};
 
 export const getAllTasks = async (req, res) => {
     try {
         const userId = req.user.id;   
-        console.log("userId: " + userId);
+         // מוצא את המשתמש כדי לקבל את רשימת החברים שלו
+         const user = await User.findById(userId);
         const tasks = await Task.find({userId});
-        console.log("tasks: " , tasks);
-        res.json(tasks);
+        res.json({tasks,
+            friends: user.friends || []
+    });
     }catch (error) {
         res.status(500).json({error: error.massage || "Failed to get tasks"})
     }
@@ -64,13 +81,17 @@ export const getAllTasks = async (req, res) => {
 
 export const updateTask = async  (req, res) => {
     const  {taskId} = req.params
-    const {title, description, dueDate, status, assignee} = req.body;
+    const {title, description, dueDate, status, assignee, priority} = req.body;
     const userId = req.user.id
-    console.log("🚀 ~ updateTask ~ userId:", userId)
-    console.log("taskId: " + taskId)
-     console.log("title: " + title)
+   
      
     try{
+        if (assignee) {
+            const user = await User.findById(userId);
+            if (!user.friends.includes(assignee)) {
+                return res.status(400).json({ error: "המשתמש המוקצה חייב להיות חבר" });
+            }
+        }
         const task = await Task.findOne({_id: taskId, userId: userId});
         console.log("🚀 ~ updateTask ~ task:", task)
         
@@ -81,7 +102,10 @@ export const updateTask = async  (req, res) => {
         task.description = description || task.description;
         task.dueDate = dueDate || task.dueDate;
         task.status = status || task.status;
-        task.assignee = assignee || task.assignee;
+        task.assignee = assignee 
+        task.priority = priority || task.priority;
+
+
         
         await task.save();
         
@@ -96,7 +120,7 @@ export const updateTask = async  (req, res) => {
 
             await Task.updateMany(
                 { userId: { $in: friendIds }, taskGroupId },
-                {title, description, dueDate, status, assignee}
+                {title, description, dueDate, status, assignee,priority}
             )
         };
         res.status(200).json(task);
@@ -116,10 +140,8 @@ export const deleteTask = async (req, res) => {
         }
         const friends = await User.find( {email: {$in: user.friends}})
         const friendsIds = friends.map(friend => friend.id)
-        console.log("friendsIds", friendsIds)
 
         const task  = await Task.findOne( {_id: taskId,userId: userId})
-        console.log("task:", task)
         if (!task) {
             return res.status(404).json({ massage: "Item not found or access denied" });
         }   

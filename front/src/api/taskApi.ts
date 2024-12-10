@@ -8,15 +8,20 @@ export interface Task {
   dueDate?: Date | string;  // Changed to optional with Date or string
   status: string | null;
   assignee: string | null;
+  priority: string;
   userId: string;
   taskGroupId: string;
   createdAt: string | null;
   updatedAt: string | null;
  }
+ export interface TaskResponse {
+  tasks: Task[];
+  friends: string[];
+}
 
-export const fetchAllTasks = async (): Promise<Task[]> => {
+export const fetchAllTasks = async (): Promise<TaskResponse> => {
  const token = getToken();
- if (!token) return [];
+ if (!token) return { tasks: [], friends: [] };
 
  try {
    const response = await fetch(BASE_URL, {
@@ -29,15 +34,15 @@ export const fetchAllTasks = async (): Promise<Task[]> => {
    });
 
    if (!response.ok) {
-     if (response.status === 401) return [];
-     throw new Error('Failed to fetch tasks');
+    if (response.status === 401) return { tasks: [], friends: [] };
+    throw new Error('Failed to fetch tasks');
    }
 
    return await response.json();
  } catch (error) {
    console.error('Error fetching tasks:', error);
-   return [];
- }
+   return { tasks: [], friends: [] };
+  }
 };
 
 export const addTask = async (
@@ -45,12 +50,23 @@ export const addTask = async (
  description?: string,
  dueDate?: string,
  status?: string,
- assignee?: string
+ assignee?: string,
+ priority: string = 'Medium'  // הוספנו ברירת מחדל לעדיפות
+
+
 ): Promise<Task | null> => {
  const token = getToken();
  if (!token) return null;
 
  try {
+  console.log('Sending task data:', {  // לוג לדיבוג
+    title,
+    description,
+    dueDate,
+    status,
+    assignee,
+    priority
+  });
    const response = await fetch(`${BASE_URL}/add`, {
      method: 'POST',
      headers: {
@@ -63,14 +79,17 @@ export const addTask = async (
        ...(description && { description }),
        ...(dueDate && { dueDate }),
        ...(status && { status }),
-       ...(assignee && { assignee })
+       ...(assignee && { assignee }),
+       ...(priority && { priority })
+
      })
    });
 
    if (!response.ok) {
-     if (response.status === 401) return null;
-     throw new Error('Failed to add task');
-   }
+    const errorData = await response.json();
+    console.error('Server error:', errorData);  // לוג לדיבוג
+    throw new Error(errorData.message || 'Failed to add task');
+  }
 
    return await response.json();
  } catch (error) {
@@ -85,7 +104,9 @@ export const updateTask = async (
  description?: string,
  dueDate?: string,
  status?: string,
- assignee?: string
+ assignee?: string,
+ priority?: string
+
 ): Promise<Task | null> => {
  const token = getToken();
  if (!token) return null;
@@ -103,7 +124,9 @@ export const updateTask = async (
        ...(description && { description }),
        ...(dueDate && { dueDate }),
        ...(status && { status }),
-       ...(assignee && { assignee })
+       ...(assignee && { assignee }),
+       ...(priority && { priority })
+
      })
    });
 

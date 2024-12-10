@@ -25,6 +25,7 @@ export const sendFriendRequest = async (data: FriendRequestData) => {
        'Content-Type': 'application/json',
        'Authorization': `Bearer ${token}`,
      },
+     credentials: 'include', 
      body: JSON.stringify(data),
    });
 
@@ -36,8 +37,8 @@ export const sendFriendRequest = async (data: FriendRequestData) => {
    return await response.json();
  } catch (error) {
    console.error('Error sending friend request:', error);
-   return null;
- }
+   throw error; // נעביר את השגיאה הלאה כדי שנוכל לטפל בה בקומפוננטה
+  }
 };
 
 export const getFriendRequests = async (): Promise<FriendRequest[]> => {
