@@ -112,12 +112,12 @@ const Home: React.FC = () => {
       label: 'הוצאות והכנסות',
       icon: '💰',
       color: 'bg-orange-100 hover:bg-orange-200 text-orange-800',
-      stats: { count: `₪${financialData.totalExpenses}`, text: 'הוצאות החודש' },
+      stats: { count: `₪${financialData.totalIncome}`, text: 'הכנסות החודש' },
     },
   ];
 
   const quickStats = [
-    { label: 'הוצאות השבוע', value: '₪850', trend: '+12%', icon: '📈' },
+    { label: 'הוצאות השבוע', value: financialData.totalExpenses, trend: '+12%', icon: '📈' },
     { label: 'חברים פעילים', value: '4', trend: 'חדש', icon: '👥' },
     { label: 'התראות', value: '3', trend: 'לא נקראו', icon: '🔔' },
   ];
@@ -299,7 +299,7 @@ const Home: React.FC = () => {
         </div>
       )}
 
-     
+
     </div>
   );
 };
