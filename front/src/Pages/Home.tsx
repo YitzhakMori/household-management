@@ -123,8 +123,8 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Alert */}
+<div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
+  {/* Alert */}
       {alert && (
         <div
           className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 ${
@@ -299,8 +299,7 @@ const Home: React.FC = () => {
         </div>
       )}
 
-      
-      
+
     </div>
   );
 };
