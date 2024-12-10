@@ -23,118 +23,36 @@ import { EventsProvider } from './components/context/EventsContext';
 import { ShoppingProvider } from "./components/context/ShoppingContext";
 
 function App() {
- return (
-  <FinancialProvider>
-    <ShoppingProvider>
-    <EventsProvider>
-   <ErrorBoundary>
-     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
-       <Router>
-         <Routes>
-           <Route path="/" element={
-             <ErrorBoundary>
-               <HomeMain />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/login" element={
-             <ErrorBoundary>
-               <LoginPage />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/signUp" element={
-             <ErrorBoundary>
-               <SignUpPage />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/verify-email" element={
-             <ErrorBoundary>
-               <VerifyEmail />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/forgot-password" element={
-             <ErrorBoundary>
-               <ForgotPassword />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/reset-password/:token" element={
-             <ErrorBoundary>
-               <ResetPassword />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/add-friend" element={
-             <ErrorBoundary>
-               <AddFriend />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/Home" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <Home />
-               </ErrorBoundary>
-             </ProtectedRoute>
-           } />
-           
-           <Route path="/admin" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <AdminPage />
-               </ErrorBoundary>
-             </ProtectedRoute>
-           } />
-           
-           <Route path="/shopping-list" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <ShoppingList />
-               </ErrorBoundary>
-             </ProtectedRoute>
-             
-           } />
-           
-           <Route path="/tasks" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <TaskList />
-               </ErrorBoundary>
-             </ProtectedRoute>
-           } />
-           
-           <Route path="/friend-requests" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <FriendRequests />
-               </ErrorBoundary>
-             </ProtectedRoute>
-           } />
-           
-           <Route path="/dashboard" element={
-             <ErrorBoundary>
-               <Dashboard />
-             </ErrorBoundary>
-           } />
-           
-           <Route path="/events" element={
-             <ProtectedRoute>
-               <ErrorBoundary>
-                 <EventTable />
-               </ErrorBoundary>
-             </ProtectedRoute>
-           } />
-         </Routes>
-       </Router>
-     </GoogleOAuthProvider>
-   </ErrorBoundary>
-   </EventsProvider>
-   </ShoppingProvider>
-   </FinancialProvider>
- );
+  return (
+    <FinancialProvider>
+      <ShoppingProvider>
+        <EventsProvider>
+          <ErrorBoundary>
+            <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
+              <Router>
+                <Routes>
+                  <Route path="/" element={<ErrorBoundary><HomeMain /></ErrorBoundary>} />
+                  <Route path="/login" element={<ErrorBoundary><LoginPage /></ErrorBoundary>} />
+                  <Route path="/signUp" element={<ErrorBoundary><SignUpPage /></ErrorBoundary>} />
+                  <Route path="/verify-email" element={<ErrorBoundary><VerifyEmail /></ErrorBoundary>} />
+                  <Route path="/forgot-password" element={<ErrorBoundary><ForgotPassword /></ErrorBoundary>} />
+                  <Route path="/reset-password/:token" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
+                  <Route path="/add-friend" element={<ErrorBoundary><AddFriend /></ErrorBoundary>} />
+                  <Route path="/Home" element={<ProtectedRoute><ErrorBoundary><Home /></ErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute><ErrorBoundary><AdminPage /></ErrorBoundary></ProtectedRoute>} />
+                  <Route path="/shopping-list" element={<ProtectedRoute><ErrorBoundary><ShoppingList /></ErrorBoundary></ProtectedRoute>} />
+                  <Route path="/tasks" element={<ProtectedRoute><ErrorBoundary><TaskList /></ErrorBoundary></ProtectedRoute>} />
+                  <Route path="/friend-requests" element={<ProtectedRoute><ErrorBoundary><FriendRequests /></ErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+                  <Route path="/events" element={<ProtectedRoute><ErrorBoundary><EventTable /></ErrorBoundary></ProtectedRoute>} />
+                </Routes>
+              </Router>
+            </GoogleOAuthProvider>
+          </ErrorBoundary>
+        </EventsProvider>
+      </ShoppingProvider>
+    </FinancialProvider>
+  );
 }
 
 export default App;

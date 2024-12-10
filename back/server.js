@@ -62,45 +62,28 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Authorization'],
 };
-
-
-
 app.use(cors(corsOptions));
-
-
 app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     next();
 });
-
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
     next();
 });
-
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-
-
-
 app.use('/api/friends', friendRequestRoutes);
 app.use("/api/House", HouseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/shopping', shoppingRoutes);
-
-
-
 app.use('/api/events',event);
 app.use('/api/transaction',transactionsRoutes);
 app.use('/api/savings', savingsRoutes);
 app.use('/api/fixedPayments', fixedPaymentsRoutes);
 app.use('/api/task',taskRoutes)
-
-
 app.listen(PORT, () => {
     contactDb();
     console.log('Server is running on port:', PORT);
