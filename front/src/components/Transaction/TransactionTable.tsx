@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTransactions, addTransaction, editTransaction, deleteTransaction } from '../../api/transactionsAPI';
+import { useFinancialContext } from '../context/FinancialContext';
 
 interface Transaction {
   _id: string;
@@ -11,11 +12,24 @@ interface Transaction {
 }
 
 const TransactionsTable: React.FC = () => {
+  const { updateFinancialData } = useFinancialContext();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadTransactions();
+      updateFinancialData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+
 
   useEffect(() => {
     loadTransactions();
@@ -45,6 +59,7 @@ const TransactionsTable: React.FC = () => {
         await addTransaction(editingTransaction);
       }
       await loadTransactions();
+      await updateFinancialData();
       setIsModalOpen(false);
       setEditingTransaction(null);
     } catch (error) {
@@ -61,6 +76,7 @@ const TransactionsTable: React.FC = () => {
       setLoading(true);
       await deleteTransaction(id);
       await loadTransactions();
+      await updateFinancialData();
     } catch (error) {
       setError('שגיאה במחיקת העסקה');
     } finally {

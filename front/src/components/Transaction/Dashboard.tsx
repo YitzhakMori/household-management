@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFinancialContext } from '../../components/context/FinancialContext';
 import TransactionsTable from './TransactionTable';
 import SavingsTable from './SavingsTable';
@@ -6,9 +6,18 @@ import FixedPaymentsTable from './FixedPaymentsTable';
 import Graphs from './Graphs';
 
 const Dashboard: React.FC = () => {
-  const { financialData } = useFinancialContext();
+  const { financialData ,updateFinancialData } = useFinancialContext();
   const [activeTab, setActiveTab] = useState<'transactions' | 'savings' | 'fixed' | 'graphs'>('transactions');
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateFinancialData();
+    }, 30000);  // כל 30 שניות
+
+    return () => clearInterval(interval);
+  }, []);
+
+  
   const renderContent = () => {
     switch (activeTab) {
       case 'transactions':
