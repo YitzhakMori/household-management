@@ -1,22 +1,29 @@
 const BASE_URL = 'http://localhost:5001/api/task';
 
 const getToken = () => localStorage.getItem('token');
+
+export interface Friend {
+  name: string;
+  email: string;
+}
+
 export interface Task {
   _id: string;
   title: string;
-  description: string | null;
-  dueDate?: Date | string;  // Changed to optional with Date or string
-  status: string | null;
-  assignee: string | null;
+  description?: string;
+  dueDate?: Date | string;
+  status: string;
+  assignee: {     // שינוי מ-string ל-object
+    name: string;
+    email: string;
+  } | null;
   priority: string;
   userId: string;
   taskGroupId: string;
-  createdAt: string | null;
-  updatedAt: string | null;
- }
- export interface TaskResponse {
+}
+export interface TaskResponse {
   tasks: Task[];
-  friends: string[];
+  friends: Friend[];
 }
 
 export const fetchAllTasks = async (): Promise<TaskResponse> => {

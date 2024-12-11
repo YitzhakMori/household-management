@@ -2,15 +2,39 @@ import User from "../models/user.model.js";
 import Task from '../models/taskModel.js'
 import mongoose from "mongoose";
 
+export const getAllTasks = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const tasks = await Task.find({ userId });
+        const user = await User.findById(userId);
+        const friendEmails = user.friends || [];
+        
+        const friends = await User.find({ email: { $in: friendEmails } })
+            .select('name email');
+
+        const friendsList = friends.map(friend => ({
+            name: friend.name,
+            email: friend.email
+        }));
+
+        res.json({
+            tasks,
+            friends: friendsList
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.massage || "Failed to get tasks" });
+    }
+};
+
 export const addTask = async (req, res) => {
     try {
-        const {title, description, dueDate, status, assignee, priority} = req.body;
+        const { title, description, dueDate, status, assignee, priority } = req.body;
         console.log('Received task data:', req.body);
 
         const taskGroupId = new mongoose.Types.ObjectId();
 
         if (!title) {
-            return res.status(400).json({error: "שדה הכותרת הוא חובה"});
+            return res.status(400).json({ error: "שדה הכותרת הוא חובה" });
         }
 
         const userId = req.user.id;
@@ -18,21 +42,25 @@ export const addTask = async (req, res) => {
             return res.status(401).json({ error: "User authentication failed" });
         }
 
-        // אם יש assignee, וודא שהוא נמצא ברשימת החברים
+        // קבלת מידע על המשתמש המוקצה אם יש
+        let assigneeData = null;
         if (assignee) {
-            const user = await User.findById(userId);
-            if (!user || !user.friends.includes(assignee)) {
-                return res.status(400).json({ error: "המשתמש המוקצה חייב להיות חבר" });
+            const assigneeUser = await User.findOne({ email: assignee }).select('name email');
+            if (assigneeUser) {
+                assigneeData = {
+                    name: assigneeUser.name,
+                    email: assigneeUser.email
+                };
             }
         }
-        
+
         const newTask = await Task.create({
             userId,
             title,
             description: description || "",
             dueDate: dueDate || null,
             status: status || "Open",
-            assignee: assignee || null,
+            assignee: assigneeData,
             priority: priority || "Medium",
             taskGroupId
         });
@@ -46,7 +74,7 @@ export const addTask = async (req, res) => {
                 description: description || "",
                 dueDate: dueDate || null,
                 status: status || "Open",
-                assignee: assignee || null,
+                assignee: assigneeData,
                 priority: priority || "Medium",
                 taskGroupId
             }));
@@ -59,25 +87,11 @@ export const addTask = async (req, res) => {
         res.status(201).json(newTask);
     } catch (error) {
         console.error('Error in addTask:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: error.message || "שגיאה ביצירת משימה"
         });
     }
 };
-
-export const getAllTasks = async (req, res) => {
-    try {
-        const userId = req.user.id;   
-         // מוצא את המשתמש כדי לקבל את רשימת החברים שלו
-         const user = await User.findById(userId);
-        const tasks = await Task.find({userId});
-        res.json({tasks,
-            friends: user.friends || []
-    });
-    }catch (error) {
-        res.status(500).json({error: error.massage || "Failed to get tasks"})
-    }
-}
 
 export const updateTask = async  (req, res) => {
     const  {taskId} = req.params
