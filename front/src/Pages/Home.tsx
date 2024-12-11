@@ -118,8 +118,8 @@ const Home: React.FC = () => {
 
   const quickStats = [
     { label: 'הוצאות השבוע', value: financialData.totalExpenses, trend: '+12%', icon: '📈' },
-    { label: 'חברים פעילים', value: '4', trend: 'חדש', icon: '👥' },
-    { label: 'התראות', value: '3', trend: 'לא נקראו', icon: '🔔' },
+    { label: 'חברים פעילים', value: '0', trend: 'חדש', icon: '👥' },
+    { label: 'התראות', value: '0', trend: 'לא נקראו', icon: '🔔' },
   ];
 
   return (

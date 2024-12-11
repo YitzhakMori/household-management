@@ -22,6 +22,8 @@ import { FinancialProvider } from './components/context/FinancialContext';
 import { EventsProvider } from './components/context/EventsContext';
 import { ShoppingProvider } from "./components/context/ShoppingContext";
 import { AuthProvider } from './components/context/AuthContext';
+import {SavingsProvider} from "./components/context/SavingsContext"
+import {FixedPaymentsProvider} from "./components/context/FixedPaymentsContext"
 
 function App() {
 
@@ -30,6 +32,8 @@ function App() {
   <AuthProvider> 
   <FinancialProvider>
     <ShoppingProvider>
+    <SavingsProvider>
+    <FixedPaymentsProvider>
     <EventsProvider>
    <ErrorBoundary>
      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
@@ -136,6 +140,10 @@ function App() {
      </GoogleOAuthProvider>
    </ErrorBoundary>
    </EventsProvider>
+   </FixedPaymentsProvider>
+
+   </SavingsProvider>
+   
    </ShoppingProvider>
    </FinancialProvider>
    </AuthProvider> 
