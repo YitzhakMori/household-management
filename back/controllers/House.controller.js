@@ -278,7 +278,8 @@ export const googleAuth = async (req, res) => {
             {
                 user_id: user._id.toString(),
                 role: user.role,
-                email: user.email
+                email: user.email,
+                name: user.name
             },
             process.env.JWT_SECRET,
             { 
