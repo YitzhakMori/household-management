@@ -1,21 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend
-} from 'recharts';
 import { fetchTransactions } from '../../api/transactionsAPI';
 import { fetchFixedPayments } from '../../api/Fixed';
 import { fetchSavings } from '../../api/Saving';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ComposedChart
+} from 'recharts';
+
+// Interfaces
+interface MonthlyData {
+  name: string;
+  הכנסות: number;
+  הוצאות: number;
+  מאזן: number;
+  חסכונות: number;
+}
 
 interface Transaction {
   _id: string;
@@ -39,217 +46,268 @@ interface Saving {
   date: string;
 }
 
+interface AppState {
+  transactions: Transaction[];
+  fixedPayments: FixedPayment[];
+  savings: Saving[];
+}
 
-const Graphs: React.FC = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [fixedPayments, setFixedPayments] = useState<FixedPayment[]>([]);
-  const [savings, setSavings] = useState<Saving[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
+interface SummaryCard {
+  title: string;
+  amount: number;
+  color: string;
+}
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+interface CircularChartData {
+  name: string;
+  value: number;
+  color: string;
+}
+// Utility Functions
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('he-IL', {
+    style: 'currency',
+    currency: 'ILS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
 
-  useEffect(() => {
-    loadAllData();
-  }, []);
+// Custom Tooltip Component
+const CustomTooltipContent = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="backdrop-blur-sm bg-white/90 px-4 py-3 rounded-xl shadow-lg border border-gray-200/50">
+        <p className="font-medium text-gray-600 mb-2">{label}</p>
+        {payload.map((entry, index) => {
+          const value = entry.value ?? 0;
+          const name = entry.name ?? 'ללא שם';
+          const color = entry.color ?? '#000000';
 
-  const loadAllData = async () => {
-    try {
-      setLoading(true);
-      const [transactionsData, fixedData, savingsData] = await Promise.all([
-        fetchTransactions(),
-        fetchFixedPayments(),
-        fetchSavings()
-      ]);
-      setTransactions(transactionsData);
-      setFixedPayments(fixedData);
-      setSavings(savingsData);
-    } catch (error) {
-      setError('שגיאה בטעינת הנתונים');
-    } finally {
-      setLoading(false);
+          return (
+            <p key={index} className="flex items-center gap-2 font-semibold">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              <span>{name}:</span>
+              <span style={{ color }}>
+                {formatCurrency(value)}
+              </span>
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+  return null;
+};
+
+const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }) => {
+  const RADIAN = Math.PI / 180;
+
+  // קח את החודש האחרון (הנוכחי)
+  const currentMonth = monthlyData[monthlyData.length - 1];
+
+  // הכן נתונים לגרף
+  const chartData: CircularChartData[] = [
+    { 
+      name: 'הכנסות', 
+      value: currentMonth.הכנסות, 
+      color: '#10B981' 
+    },
+    { 
+      name: 'הוצאות', 
+      value: currentMonth.הוצאות, 
+      color: '#EF4444' 
+    },
+    { 
+      name: 'חסכונות', 
+      value: currentMonth.חסכונות, 
+      color: '#6366F1' 
     }
+  ];
+
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent
+  }: {
+    cx: number,
+    cy: number,
+    midAngle: number,
+    innerRadius: number,
+    outerRadius: number,
+    percent: number
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="font-bold text-sm"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
   };
 
-  // הכנת נתונים להכנסות והוצאות לאורך זמן
-  const incomeExpenseData = useMemo(() => {
-    const grouped = transactions.reduce((acc: any, curr) => {
-      const date = new Date(curr.date);
-      const key = date.toLocaleDateString('he-IL', { month: 'short', year: 'numeric' });
-      if (!acc[key]) {
-        acc[key] = { name: key, income: 0, expenses: 0 };
-      }
-      if (curr.type === 'income') {
-        acc[key].income += curr.amount;
-      } else {
-        acc[key].expenses += curr.amount;
-      }
-      return acc;
-    }, {});
-    return Object.values(grouped);
-  }, [transactions]);
-
-  // הכנת נתונים להתפלגות קטגוריות
-  const categoryData = useMemo(() => {
-    const grouped = transactions.reduce((acc: any, curr) => {
-      if (!acc[curr.category]) {
-        acc[curr.category] = 0;
-      }
-      acc[curr.category] += curr.amount;
-      return acc;
-    }, {});
-    return Object.entries(grouped).map(([name, value]) => ({ name, value }));
-  }, [transactions]);
+  // אם אין נתונים, הוסף נתוני דמה
+  const finalData = chartData.length > 0 ? chartData : [
+    { name: 'הכנסות', value: 10000, color: '#10B981' },
+    { name: 'הוצאות', value: 8000, color: '#EF4444' },
+    { name: 'חסכונות', value: 2000, color: '#6366F1' }
+  ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 p-4">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="text-white">
-            <h1 className="text-2xl font-bold mb-1">ניתוח פיננסי</h1>
-            <p className="text-blue-100">תובנות מהנתונים הפיננסיים שלך</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedPeriod('week')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedPeriod === 'week' 
-                  ? 'bg-white text-blue-600' 
-                  : 'bg-blue-500 text-white'
-              }`}
-            >
-              שבוע
-            </button>
-            <button
-              onClick={() => setSelectedPeriod('month')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedPeriod === 'month' 
-                  ? 'bg-white text-blue-600' 
-                  : 'bg-blue-500 text-white'
-              }`}
-            >
-              חודש
-            </button>
-            <button
-              onClick={() => setSelectedPeriod('year')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedPeriod === 'year' 
-                  ? 'bg-white text-blue-600' 
-                  : 'bg-blue-500 text-white'
-              }`}
-            >
-              שנה
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+        סיכום החודש הנוכחי 
+      </h2>
 
-      {loading && (
-        <div className="text-center p-4">
-          <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 border-r-4 border-red-500 p-4 mb-6 rounded-lg">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">❌</div>
-            <div className="mr-3">{error}</div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* הכנסות והוצאות לאורך זמן */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="text-lg font-bold mb-4">הכנסות והוצאות לאורך זמן</h2>
-          <div className="h-[400px] w-full">
-            <LineChart
-              width={600}
-              height={400}
-              data={incomeExpenseData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="income" stroke="#00C49F" name="הכנסות" />
-              <Line type="monotone" dataKey="expenses" stroke="#FF8042" name="הוצאות" />
-            </LineChart>
-          </div>
-        </div>
-
-        {/* התפלגות לפי קטגוריות */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="text-lg font-bold mb-4">התפלגות לפי קטגוריות</h2>
-          <div className="h-[400px] w-full">
-            <PieChart width={400} height={400}>
+      <div className="flex flex-col md:flex-row items-center justify-center">
+        <div className="h-[400px] md:w-1/2">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
               <Pie
-                data={categoryData}
-                cx={200}
-                cy={200}
+                data={finalData}
+                cx="50%"
+                cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={150}
-                fill="#8884d8"
+                label={renderCustomizedLabel}
+                outerRadius="90%"
+                innerRadius="50%"
+                paddingAngle={3}
                 dataKey="value"
               >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {finalData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    className="transition-all duration-300 hover:opacity-80"
+                  />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip content={CustomTooltipContent} />
             </PieChart>
-          </div>
+          </ResponsiveContainer>
         </div>
 
-        {/* חסכונות לאורך זמן */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="text-lg font-bold mb-4">חסכונות לאורך זמן</h2>
-          <div className="h-[400px] w-full">
-            <BarChart
-              width={600}
-              height={400}
-              data={savings}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="amount" fill="#8884d8" name="חסכונות" />
-            </BarChart>
-          </div>
-        </div>
+        <div className="mt-7 md:mt-0 md:ml-8 md:w-1/2 flex flex-col items-center">
+  {finalData.map((item, index) => (
+    <div key={index} className="text-center mb-8">
+      <div
+        className="w-6 h-4 inline-block mr-3 rounded-full"
+        style={{ backgroundColor: item.color }}
+      />
+      <span className="text-xl font-semibold text-gray-800">
+        {item.name}: <span className="font-bold text-2xl">{`₪${item.value.toLocaleString()}`}</span>
+      </span>
+    </div>
+  ))}
+</div>
 
-        {/* תשלומים קבועים */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="text-lg font-bold mb-4">תשלומים קבועים</h2>
-          <div className="h-[400px] w-full">
-            <BarChart
-              width={600}
-              height={400}
-              data={fixedPayments}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="description" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="amount" fill="#00C49F" name="סכום" />
-            </BarChart>
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Graphs;
+const FinancialDashboard: React.FC = () => {
+  const [data, setData] = useState<AppState>({
+    transactions: [],
+    fixedPayments: [],
+    savings: []
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [transactions, fixedPayments, savings] = await Promise.all([
+          fetchTransactions(),
+          fetchFixedPayments(),
+          fetchSavings()
+        ]);
+        setData({ transactions, fixedPayments, savings });
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const monthlyData = useMemo<MonthlyData[]>(() => {
+    const months: Record<string, MonthlyData> = {};
+
+    data.transactions.forEach(transaction => {
+      const date = new Date(transaction.date);
+      const monthKey = date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
+
+      if (!months[monthKey]) {
+        months[monthKey] = {
+          name: monthKey,
+          הכנסות: 0,
+          הוצאות: 0,
+          מאזן: 0,
+          חסכונות: 0
+        };
+      }
+
+      if (transaction.type === 'income') {
+        months[monthKey].הכנסות += transaction.amount;
+      } else {
+        months[monthKey].הוצאות += transaction.amount;
+      }
+
+      months[monthKey].מאזן = months[monthKey].הכנסות - months[monthKey].הוצאות;
+    });
+
+    data.savings.forEach(saving => {
+      const date = new Date(saving.date);
+      const monthKey = date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
+      if (months[monthKey]) {
+        months[monthKey].חסכונות += saving.amount;
+      }
+    });
+
+    return Object.values(months);
+  }, [data]);
+
+  const totalNumbers = useMemo(() => {
+    return {
+      income: data.transactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum, 0),
+      expenses: data.transactions.reduce((sum, t) => t.type !== 'income' ? sum + t.amount : sum, 0),
+      savings: data.savings.reduce((sum, s) => sum + s.amount, 0)
+    };
+  }, [data]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="p-6">
+      
+     
+      <div className="mt-6">
+        <CircularChart monthlyData={monthlyData} />
+      </div>
+    </div>
+  );
+};
+
+
+
+export default FinancialDashboard;
