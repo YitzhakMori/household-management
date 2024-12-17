@@ -11,7 +11,6 @@ import { useFinancialContext } from "../components/context/FinancialContext";
 import { useEvents } from "../components/context/EventsContext";
 import { useShopping } from "../components/context/ShoppingContext";
 
-// הוספת הממשק של בקשת חבר
 interface FriendRequest {
   _id: string;
   sender: {
@@ -27,7 +26,7 @@ interface Friend {
 
 const Home: React.FC = () => {
   const { itemCount } = useShopping();
-  const { financialData } = useFinancialContext(); // שימוש ב-context לניהול נתונים פיננסיים
+  const { financialData } = useFinancialContext();
   const { getUpcomingWeekEventsCount } = useEvents();
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -41,6 +40,8 @@ const Home: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const navigate = useNavigate();
+
+
 
   // שליפת רשימת החברים
   useEffect(() => {
@@ -68,6 +69,7 @@ const Home: React.FC = () => {
 }, []);
 
   // שליפת נתוני משתמש מטוקן
+
   useEffect(() => {
     const user = getUserIdFromToken();
     if (user) {
@@ -78,7 +80,10 @@ const Home: React.FC = () => {
     }
   }, []);
 
+
+
   // שליפת בקשות חברות
+
   useEffect(() => {
     loadFriendRequests();
   }, []);
@@ -92,8 +97,12 @@ const Home: React.FC = () => {
     }
   };
 
+
+  const showAlert = (message: string, type: 'success' | 'error') => {
+
   // ניהול התראות
   const showAlert = (message: string, type: "success" | "error") => {
+
     setAlert({ message, type });
     setTimeout(() => setAlert(null), 3000);
   };
@@ -122,7 +131,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // הגדרת פריטים לתפריט
   const menuItems = [
     {
       path: "/shopping-list",
@@ -158,6 +166,10 @@ const Home: React.FC = () => {
   ];
 
   const quickStats = [
+
+    { label: 'הוצאות השבוע', value: financialData.totalExpenses, trend: '+12%', icon: '📈' },
+    { label: 'חברים פעילים', value: '0', trend: 'חדש', icon: '👥' },
+
     {
       label: "הוצאות השבוע",
       value: financialData.totalExpenses,
@@ -176,6 +188,7 @@ const Home: React.FC = () => {
       trend: "לא נקראו",
       icon: "🔔",
     },
+
   ];
 
   return (
@@ -203,8 +216,12 @@ const Home: React.FC = () => {
             <div className="text-white mb-6 md:mb-0">
               <h1 className="text-4xl font-bold mb-2">ניהול משק בית</h1>
               <p className="text-blue-100">
+
+                <p dir="rtl">ברוך הבא{userName ? `, ${userName}` : ''}!</p>נהל את משק הבית שלך בקלות ויעילות
+
                 <p dir="rtl">ברוך הבא{userName ? `, ${userName}` : ""}!</p>נהל את
                 משק הבית שלך בקלות ויעילות
+
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -296,6 +313,23 @@ const Home: React.FC = () => {
   
       {/* Quick Stats */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
+            {quickStats.map((stat, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg shadow p-4 flex justify-between items-center hover:shadow-lg hover:scale-[1.02] transition-all duration-300"
+              >
+                <div>
+                  <p className="text-sm text-gray-600">{stat.label}</p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-2xl mb-1">{stat.icon}</span>
+                  <span className="text-sm text-gray-500">{stat.trend}</span>
+                </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {quickStats.map((stat, index) => (
             <div
@@ -314,9 +348,10 @@ const Home: React.FC = () => {
               <div className="flex flex-col items-end">
                 <span className="text-2xl mb-1">{stat.icon}</span>
                 <span className="text-sm text-gray-500">{stat.trend}</span>
+
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
   
@@ -366,6 +401,8 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+
+
   
       {/* Friends List Modal */}
       {showFriendsModal && (
@@ -423,6 +460,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
