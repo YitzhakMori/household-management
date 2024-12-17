@@ -18,44 +18,45 @@ const AddFriend: React.FC<AddFriendProps> = ({ onSuccess }) => {
 
   const handleAddFriend = async () => {
     if (!email) {
-        setMessage({ text: 'יש להזין כתובת דואר אלקטרוני', type: 'error' });
-        return;
+      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני', type: 'error' });
+      return;
     }
-
+  
     // בדיקת תקינות כתובת המייל
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        setMessage({ text: 'יש להזין כתובת דואר אלקטרוני תקינה', type: 'error' });
-        return;
+      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני תקינה', type: 'error' });
+      return;
     }
-
+  
     setLoading(true);
     setMessage(null);
-
+  
     try {
-        const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/request', {
-            method: 'POST',
-            body: JSON.stringify({ recipientEmail: email })
-        });
-
-        if (response.success) {
-            setMessage({ text: response.message, type: 'success' });
-            setEmail('');
-            if (onSuccess) {
-                setTimeout(onSuccess, 1500);
-            }
-        }
+      const response = await makeAuthenticatedRequest('http://localhost:5001/api/House/friends/add', {
+        method: 'POST',
+        body: JSON.stringify({ friendEmail: email })
+      });
+  
+      setMessage({ 
+        text: 'בקשת החברות נשלחה בהצלחה', 
+        type: 'success' 
+      });
+      setEmail('');
+      
+      if (onSuccess) {
+        setTimeout(onSuccess, 1500);
+      }
     } catch (error) {
-        if (error instanceof Error) {
-            setMessage({ 
-                text: error.message || 'שגיאה בשליחת בקשת החברות',
-                type: 'error'
-            });
-        }
+      handleAuthError(error);
+      setMessage({
+        text: error instanceof Error ? error.message : 'שגיאה בשליחת בקשת החברות',
+        type: 'error'
+      });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !loading) {
