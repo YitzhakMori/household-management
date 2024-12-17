@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       updateFinancialData();
-    }, 30000);  // כל 30 שניות
+    }, 300000);  // כל 30 שניות
 
     return () => clearInterval(interval);
   }, []);

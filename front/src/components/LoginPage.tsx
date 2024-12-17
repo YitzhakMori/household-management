@@ -60,11 +60,13 @@ const LoginPage = () => {
    
       localStorage.setItem('token', data.token);
       localStorage.setItem('userData', JSON.stringify(data.user));
+      
       if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/home');
       }
+      window.location.reload();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'שגיאה בהתחברות');
     } finally {
