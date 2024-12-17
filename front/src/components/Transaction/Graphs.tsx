@@ -14,24 +14,9 @@ import {
   Legend,
   ComposedChart
 } from 'recharts';
+import { Transaction } from '../../interfaces/TransactionModel'; // Import Transaction interface
 
 // Interfaces
-interface MonthlyData {
-  name: string;
-  הכנסות: number;
-  הוצאות: number;
-  מאזן: number;
-  חסכונות: number;
-}
-
-interface Transaction {
-  _id: string;
-  type: string;
-  amount: number;
-  category: string;
-  date: string;
-}
-
 interface FixedPayment {
   _id: string;
   amount: number;
@@ -52,17 +37,12 @@ interface AppState {
   savings: Saving[];
 }
 
-interface SummaryCard {
-  title: string;
-  amount: number;
-  color: string;
-}
-
 interface CircularChartData {
   name: string;
   value: number;
   color: string;
 }
+
 // Utility Functions
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('he-IL', {
@@ -103,29 +83,39 @@ const CustomTooltipContent = ({ active, payload, label }: TooltipProps<number, s
   return null;
 };
 
-const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }) => {
+const CircularChart: React.FC<{ transactions: Transaction[], savings: Saving[] }> = ({ transactions, savings }) => {
   const RADIAN = Math.PI / 180;
 
-  // קח את החודש האחרון (הנוכחי)
-  const currentMonth = monthlyData[monthlyData.length - 1];
+  const currentMonthData = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
-  // הכן נתונים לגרף
+    const currentMonthTransactions = transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
+    });
+
+    const currentMonthSavings = savings.filter(s => {
+      const savingDate = new Date(s.date);
+      return savingDate.getMonth() === currentMonth && savingDate.getFullYear() === currentYear;
+    });
+
+    const income = currentMonthTransactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum, 0);
+    const expenses = currentMonthTransactions.reduce((sum, t) => t.type !== 'income' ? sum + t.amount : sum, 0);
+    const savingsAmount = currentMonthSavings.reduce((sum, s) => sum + s.amount, 0);
+
+    return {
+      הכנסות: income,
+      הוצאות: expenses,
+      חסכונות: savingsAmount
+    };
+  }, [transactions, savings]);
+
   const chartData: CircularChartData[] = [
-    { 
-      name: 'הכנסות', 
-      value: currentMonth.הכנסות, 
-      color: '#10B981' 
-    },
-    { 
-      name: 'הוצאות', 
-      value: currentMonth.הוצאות, 
-      color: '#EF4444' 
-    },
-    { 
-      name: 'חסכונות', 
-      value: currentMonth.חסכונות, 
-      color: '#6366F1' 
-    }
+    { name: 'הכנסות', value: currentMonthData.הכנסות, color: '#10B981' },
+    { name: 'הוצאות', value: currentMonthData.הוצאות, color: '#EF4444' },
+    { name: 'חסכונות', value: currentMonthData.חסכונות, color: '#6366F1' }
   ];
 
   const renderCustomizedLabel = ({
@@ -161,13 +151,6 @@ const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }
     );
   };
 
-  // אם אין נתונים, הוסף נתוני דמה
-  const finalData = chartData.length > 0 ? chartData : [
-    { name: 'הכנסות', value: 10000, color: '#10B981' },
-    { name: 'הוצאות', value: 8000, color: '#EF4444' },
-    { name: 'חסכונות', value: 2000, color: '#6366F1' }
-  ];
-
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200">
       <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
@@ -179,7 +162,7 @@ const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={finalData}
+                data={chartData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -189,7 +172,7 @@ const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }
                 paddingAngle={3}
                 dataKey="value"
               >
-                {finalData.map((entry, index) => (
+                {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={entry.color}
@@ -203,19 +186,18 @@ const CircularChart: React.FC<{ monthlyData: MonthlyData[] }> = ({ monthlyData }
         </div>
 
         <div className="mt-7 md:mt-0 md:ml-8 md:w-1/2 flex flex-col items-center">
-  {finalData.map((item, index) => (
-    <div key={index} className="text-center mb-8">
-      <div
-        className="w-6 h-4 inline-block mr-3 rounded-full"
-        style={{ backgroundColor: item.color }}
-      />
-      <span className="text-xl font-semibold text-gray-800">
-        {item.name}: <span className="font-bold text-2xl">{`₪${item.value.toLocaleString()}`}</span>
-      </span>
-    </div>
-  ))}
-</div>
-
+          {chartData.map((item, index) => (
+            <div key={index} className="text-center mb-8">
+              <div
+                className="w-6 h-4 inline-block mr-3 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-xl font-semibold text-gray-800">
+                {item.name}: <span className="font-bold text-2xl">{formatCurrency(item.value)}</span>
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -248,66 +230,20 @@ const FinancialDashboard: React.FC = () => {
     loadData();
   }, []);
 
-  const monthlyData = useMemo<MonthlyData[]>(() => {
-    const months: Record<string, MonthlyData> = {};
-
-    data.transactions.forEach(transaction => {
-      const date = new Date(transaction.date);
-      const monthKey = date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
-
-      if (!months[monthKey]) {
-        months[monthKey] = {
-          name: monthKey,
-          הכנסות: 0,
-          הוצאות: 0,
-          מאזן: 0,
-          חסכונות: 0
-        };
-      }
-
-      if (transaction.type === 'income') {
-        months[monthKey].הכנסות += transaction.amount;
-      } else {
-        months[monthKey].הוצאות += transaction.amount;
-      }
-
-      months[monthKey].מאזן = months[monthKey].הכנסות - months[monthKey].הוצאות;
-    });
-
-    data.savings.forEach(saving => {
-      const date = new Date(saving.date);
-      const monthKey = date.toLocaleDateString('he-IL', { month: 'short', year: '2-digit' });
-      if (months[monthKey]) {
-        months[monthKey].חסכונות += saving.amount;
-      }
-    });
-
-    return Object.values(months);
-  }, [data]);
-
-  const totalNumbers = useMemo(() => {
-    return {
-      income: data.transactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum, 0),
-      expenses: data.transactions.reduce((sum, t) => t.type !== 'income' ? sum + t.amount : sum, 0),
-      savings: data.savings.reduce((sum, s) => sum + s.amount, 0)
-    };
-  }, [data]);
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="p-6">
-      
-     
       <div className="mt-6">
-        <CircularChart monthlyData={monthlyData} />
+        <CircularChart 
+          transactions={data.transactions} 
+          savings={data.savings} 
+        />
       </div>
     </div>
   );
 };
-
-
 
 export default FinancialDashboard;

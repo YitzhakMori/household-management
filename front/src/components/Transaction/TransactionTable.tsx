@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTransactions, addTransaction, editTransaction, deleteTransaction } from '../../api/transactionsAPI';
 import { useFinancialContext } from '../context/FinancialContext';
-
-interface Transaction {
-  _id: string;
-  type: string;
-  amount: number;
-  description: string;
-  category: string;
-  date: string;
-}
+import { Transaction } from '../../interfaces/TransactionModel';
 
 const TransactionsTable: React.FC = () => {
   const { updateFinancialData } = useFinancialContext();
@@ -19,7 +11,6 @@ const TransactionsTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
   useEffect(() => {
     const interval = setInterval(() => {
       loadTransactions();
@@ -28,8 +19,6 @@ const TransactionsTable: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
-
-
 
   useEffect(() => {
     loadTransactions();
@@ -71,7 +60,7 @@ const TransactionsTable: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('האם אתה בטוח שברצונך למחוק עסקה זו?')) return;
-    
+
     try {
       setLoading(true);
       await deleteTransaction(id);
@@ -95,7 +84,7 @@ const TransactionsTable: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setEditingTransaction({ _id: '', type: 'income', amount: 0, description: '', category: 'general', date: '' });
+              setEditingTransaction({ _id: '', type: 'income', amount: 0, description: '', date: '' });
               setIsModalOpen(true);
             }}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg 
@@ -133,7 +122,6 @@ const TransactionsTable: React.FC = () => {
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">סוג</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">סכום</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תיאור</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">קטגוריה</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תאריך</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
               </tr>
@@ -143,8 +131,8 @@ const TransactionsTable: React.FC = () => {
                 <tr key={transaction._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                      ${transaction.type === 'income' 
-                        ? 'bg-green-100 text-green-800' 
+                      ${transaction.type === 'income'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'}`}>
                       {transaction.type === 'income' ? 'הכנסה' : 'הוצאה'}
                     </div>
@@ -154,11 +142,6 @@ const TransactionsTable: React.FC = () => {
                     ₪{transaction.amount.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{transaction.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-                      {transaction.category}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(transaction.date).toLocaleDateString('he-IL')}
                   </td>
@@ -213,7 +196,7 @@ const TransactionsTable: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">סוג עסקה</label>
                   <select
                     value={editingTransaction?.type}
-                    onChange={e => setEditingTransaction(prev => prev ? {...prev, type: e.target.value} : prev)}
+                    onChange={e => setEditingTransaction(prev => prev ? { ...prev, type: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="income">הכנסה</option>
@@ -224,10 +207,18 @@ const TransactionsTable: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">סכום</label>
                   <input
-                    type="number"
-                    value={editingTransaction?.amount}
-                    onChange={e => setEditingTransaction(prev => prev ? {...prev, amount: +e.target.value} : prev)}
+                    type="text"
+                    value={editingTransaction?.amount || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                        setEditingTransaction(prev =>
+                          prev ? { ...prev, amount: value === '' ? 0 : parseFloat(value) } : prev
+                        );
+                      }
+                    }}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="הזן סכום"
                   />
                 </div>
 
@@ -236,22 +227,9 @@ const TransactionsTable: React.FC = () => {
                   <input
                     type="text"
                     value={editingTransaction?.description}
-                    onChange={e => setEditingTransaction(prev => prev ? {...prev, description: e.target.value} : prev)}
+                    onChange={e => setEditingTransaction(prev => prev ? { ...prev, description: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">קטגוריה</label>
-                  <select
-                    value={editingTransaction?.category}
-                    onChange={e => setEditingTransaction(prev => prev ? {...prev, category: e.target.value} : prev)}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="general">כללי</option>
-                    <option value="fixed">קבוע</option>
-                    <option value="savings">חסכונות</option>
-                  </select>
                 </div>
 
                 <div>
@@ -259,7 +237,7 @@ const TransactionsTable: React.FC = () => {
                   <input
                     type="date"
                     value={editingTransaction?.date ? new Date(editingTransaction.date).toISOString().split('T')[0] : ''}
-                    onChange={e => setEditingTransaction(prev => prev ? {...prev, date: e.target.value} : prev)}
+                    onChange={e => setEditingTransaction(prev => prev ? { ...prev, date: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
