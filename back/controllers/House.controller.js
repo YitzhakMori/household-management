@@ -344,24 +344,55 @@ export const addFriend = async (userId, friendEmail) => {
             return { success: false, message: "המשתמש המבוקש לא נמצא" };
         }
 
-        if (user.friends.includes(friendEmail)) {
+        if (user.friends.includes(friendUser._id)) {
             return { success: false, message: "החבר כבר קיים ברשימה" };
         }
 
         user.friends.push(friendEmail);
         await user.save();
-        console.log("🚀 ~ user saved successfully:", user);
 
         friendUser.friends.push(user.email);
         await friendUser.save();
-        console.log("🚀 ~ friendUser saved successfully:", friendUser);
 
-        return { success: true, message: "החבר נוסף בהצלחה", friend: friendUser };
+        return { 
+            success: true, 
+            message: "החבר נוסף בהצלחה", 
+            friend: friendUser
+        };
     } catch (error) {
         console.error(error);
         return { success: false, message: "שגיאה בשרת" };
     }
 };
+
+// בקובץ House.controller.js או friends.controller.js
+export const getFriendsDetails = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        const friendEmails = user.friends || [];
+        
+        const friends = await User.find({ email: { $in: friendEmails } })
+            .select('name email');
+
+        const friendsList = friends.map(friend => ({
+            name: friend.name,
+            email: friend.email
+        }));
+
+        res.json({
+            success: true,
+            friends: friendsList
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: "Error fetching friends details" 
+        });
+    }
+};
+
+
 
 
 export const removeFriend = async (req,res)=> {

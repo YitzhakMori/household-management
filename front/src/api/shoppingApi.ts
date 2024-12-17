@@ -35,65 +35,66 @@ export const fetchShoppingItems = async (): Promise<ShoppingItem[]> => {
  }
 };
 
-export const addShoppingItem = async (
- name: string, 
- quantity: number
-): Promise<ShoppingItem | null> => {
- const token = getToken();
- if (!token) return null;
+export const addShoppingItem = async (name: string, quantity: number, category: string, unit: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/addItem`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        name, 
+        quantity, 
+        category: category || 'כללי',
+        unit: unit || 'יחידות' 
+      })
+    });
 
- try {
-   const response = await fetch(`${BASE_URL}/addItem`, {
-     method: 'POST',
-     headers: {
-       'Content-Type': 'application/json',
-       'Authorization': `Bearer ${token}`,
-     },
-     credentials: 'include',
-     body: JSON.stringify({ name, quantity }),
-   });
-
-   if (!response.ok) {
-     if (response.status === 401) return null;
-     throw new Error('Failed to add shopping item');
-   }
-
-   return await response.json();
- } catch (error) {
-   console.error('Error adding shopping item:', error); 
-   return null;
- }
+    if (!response.ok) {
+      throw new Error('Failed to add item');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error adding item:', error);
+    throw error;
+  }
 };
 
 export const updateShoppingItem = async (
- itemId: string,
- name: string,
- quantity: number
-): Promise<ShoppingItem | null> => {
- const token = getToken();
- if (!token) return null;
+  itemId: string, 
+  name: string, 
+  quantity: number, 
+  category: string, 
+  unit: string,
+  isPurchased: boolean
+) => {
+  try {
+    const response = await fetch(`${BASE_URL}/${itemId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        name, 
+        quantity, 
+        category: category || 'כללי',
+        unit: unit || 'יחידות',
+        isPurchased 
+      })
+    });
 
- try {
-   const response = await fetch(`${BASE_URL}/${itemId}`, {
-     method: 'PUT',
-     headers: {
-       'Content-Type': 'application/json',
-       'Authorization': `Bearer ${token}`,
-     },
-     credentials: 'include', 
-     body: JSON.stringify({ name, quantity }),
-   });
-
-   if (!response.ok) {
-     if (response.status === 401) return null;
-     throw new Error('Failed to update shopping item');
-   }
-
-   return await response.json();
- } catch (error) {
-   console.error('Error updating shopping item:', error);
-   return null;
- }
+    if (!response.ok) {
+      throw new Error('Failed to update item');
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error updating item:', error);
+    throw error;
+  }
 };
 
 export const deleteShoppingItem = async (itemId: string): Promise<boolean> => {
