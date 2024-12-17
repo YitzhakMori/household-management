@@ -24,12 +24,13 @@ import { ShoppingProvider } from "./components/context/ShoppingContext";
 import { AuthProvider } from './components/context/AuthContext';
 import {SavingsProvider} from "./components/context/SavingsContext"
 import {FixedPaymentsProvider} from "./components/context/FixedPaymentsContext"
-
+import { TasksProvider } from "./components/context/TasksContext";
 function App() {
 
   
  return (
   <AuthProvider> 
+    <TasksProvider>
   <FinancialProvider>
     <ShoppingProvider>
     <SavingsProvider>
@@ -146,6 +147,7 @@ function App() {
    
    </ShoppingProvider>
    </FinancialProvider>
+   </TasksProvider>
    </AuthProvider> 
  );
 

@@ -10,6 +10,7 @@ import {
 import { useFinancialContext } from "../components/context/FinancialContext";
 import { useEvents } from "../components/context/EventsContext";
 import { useShopping } from "../components/context/ShoppingContext";
+import { useTasks } from "../components/context/TasksContext";
 
 interface FriendRequest {
   _id: string;
@@ -18,16 +19,18 @@ interface FriendRequest {
     email: string;
   };
 }
+
 interface Friend {
   name: string;
   email: string;
 }
 
-
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const { itemCount } = useShopping();
   const { financialData } = useFinancialContext();
   const { getUpcomingWeekEventsCount } = useEvents();
+  const { tasksCount, loadTasks } = useTasks();
   const [userName, setUserName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
@@ -39,36 +42,30 @@ const Home: React.FC = () => {
   } | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
-  const navigate = useNavigate();
 
-
-
-  // שליפת רשימת החברים
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-          const response = await fetch('http://localhost:5001/api/House/friends/details', {
-              headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`
-              }
-          });
-          const data = await response.json();
-          
-          if (data.success) {
-              setFriends(data.friends); // עכשיו זה יהיה מערך של אובייקטים עם name ו-email
-          } else {
-              setFriends([]);
+        const response = await fetch('http://localhost:5001/api/House/friends/details', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
-      } catch (error) {
-          console.error('Error fetching friends:', error);
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          setFriends(data.friends);
+        } else {
           setFriends([]);
+        }
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+        setFriends([]);
       }
-  };
+    };
 
     fetchFriends();
-}, []);
-
-  // שליפת נתוני משתמש מטוקן
+  }, []);
 
   useEffect(() => {
     const user = getUserIdFromToken();
@@ -79,10 +76,6 @@ const Home: React.FC = () => {
       console.log(`User ${user.userId}`);
     }
   }, []);
-
-
-
-  // שליפת בקשות חברות
 
   useEffect(() => {
     loadFriendRequests();
@@ -97,12 +90,7 @@ const Home: React.FC = () => {
     }
   };
 
-
-  const showAlert = (message: string, type: 'success' | 'error') => {
-
-  // ניהול התראות
   const showAlert = (message: string, type: "success" | "error") => {
-
     setAlert({ message, type });
     setTimeout(() => setAlert(null), 3000);
   };
@@ -144,7 +132,7 @@ const Home: React.FC = () => {
       label: "משימות",
       icon: "✓",
       color: "bg-green-100 hover:bg-green-200 text-green-800",
-      stats: { count: "5", text: "משימות להיום" },
+      stats: { count: tasksCount, text: "משימות ברשימה" },
     },
     {
       path: "/events",
@@ -166,10 +154,6 @@ const Home: React.FC = () => {
   ];
 
   const quickStats = [
-
-    { label: 'הוצאות השבוע', value: financialData.totalExpenses, trend: '+12%', icon: '📈' },
-    { label: 'חברים פעילים', value: '0', trend: 'חדש', icon: '👥' },
-
     {
       label: "הוצאות השבוע",
       value: financialData.totalExpenses,
@@ -182,18 +166,11 @@ const Home: React.FC = () => {
       trend: "חדש",
       icon: "👥",
     },
-    {
-      label: "התראות",
-      value: "0",
-      trend: "לא נקראו",
-      icon: "🔔",
-    },
-
+    
   ];
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Alert */}
       {alert && (
         <div
           className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50 ${
@@ -203,29 +180,23 @@ const Home: React.FC = () => {
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="text-xl">{alert.type === "success" ? "✓" : "⚠️"}</span>
+            <span className="text-xl">{alert.type === "success" ? "✓" : "⚠"}</span>
             <span className="font-medium">{alert.message}</span>
           </div>
         </div>
       )}
   
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-white mb-6 md:mb-0">
               <h1 className="text-4xl font-bold mb-2">ניהול משק בית</h1>
               <p className="text-blue-100">
-
-                <p dir="rtl">ברוך הבא{userName ? `, ${userName}` : ''}!</p>נהל את משק הבית שלך בקלות ויעילות
-
                 <p dir="rtl">ברוך הבא{userName ? `, ${userName}` : ""}!</p>נהל את
                 משק הבית שלך בקלות ויעילות
-
               </p>
             </div>
             <div className="flex items-center gap-4">
-              {/* Friend Requests */}
               <div className="relative">
                 <button
                   onClick={() => setIsRequestsOpen(!isRequestsOpen)}
@@ -286,7 +257,6 @@ const Home: React.FC = () => {
                 )}
               </div>
   
-              {/* Add Friend */}
               <button
                 onClick={() => setShowAddFriendModal(true)}
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg shadow hover:shadow-lg hover:scale-105 hover:bg-blue-50 transition-all duration-300 ease-in-out flex items-center space-x-2 space-x-reverse"
@@ -295,7 +265,6 @@ const Home: React.FC = () => {
                 <span className="font-medium">הוספת חבר</span>
               </button>
   
-              {/* Logout */}
               <button
                 onClick={() => {
                   localStorage.removeItem("token");
@@ -311,26 +280,9 @@ const Home: React.FC = () => {
         </div>
       </div>
   
-      {/* Quick Stats */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-
-        <div className="flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
-            {quickStats.map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow p-4 flex justify-between items-center hover:shadow-lg hover:scale-[1.02] transition-all duration-300"
-              >
-                <div>
-                  <p className="text-sm text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-2xl mb-1">{stat.icon}</span>
-                  <span className="text-sm text-gray-500">{stat.trend}</span>
-                </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div className="flex justify-center">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
           {quickStats.map((stat, index) => (
             <div
               key={index}
@@ -348,14 +300,14 @@ const Home: React.FC = () => {
               <div className="flex flex-col items-end">
                 <span className="text-2xl mb-1">{stat.icon}</span>
                 <span className="text-sm text-gray-500">{stat.trend}</span>
-
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
+      </div>
+
   
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
           {menuItems.map((item) => (
@@ -381,7 +333,6 @@ const Home: React.FC = () => {
         </div>
       </div>
   
-      {/* Add Friend Modal */}
       {showAddFriendModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div
@@ -401,10 +352,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-
-
   
-      {/* Friends List Modal */}
       {showFriendsModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div
@@ -460,7 +408,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
