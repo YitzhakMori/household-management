@@ -21,7 +21,7 @@ const SavingsTable: React.FC = () => {
     const interval = setInterval(() => {
       loadSavings();
       updateFinancialData();
-    }, 30000); // רענון כל 30 שניות
+    }, 300000); // רענון כל 30 שניות
 
     return () => clearInterval(interval);
   }, []);

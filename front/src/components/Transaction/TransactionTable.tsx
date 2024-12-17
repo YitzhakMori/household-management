@@ -15,7 +15,7 @@ const TransactionsTable: React.FC = () => {
     const interval = setInterval(() => {
       loadTransactions();
       updateFinancialData();
-    }, 30000);
+    }, 300000);
 
     return () => clearInterval(interval);
   }, []);
