@@ -1,9 +1,9 @@
-// types.ts
 export interface ShoppingItem {
-    _id: string;
-    name: string;
-    quantity: number;
-    isPurchased: boolean;
-    users: string[];
+  _id: string;
+  name: string;
+  quantity: number;
+  category?: string;
+  unit?: string;
+  isPurchased: boolean;
+  itemGroupId: string | null;
 }
-
