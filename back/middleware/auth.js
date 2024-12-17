@@ -14,7 +14,6 @@ export const auth = async (req, res, next) => {
 
         // מנקים את הטוקן מכפילויות של Bearer
         const token = authHeader.replace(/^Bearer\s+/i, '').replace(/^Bearer\s+/i, '');
-        console.log('Clean token:', token);
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.user_id);

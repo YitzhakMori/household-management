@@ -18,47 +18,44 @@ const AddFriend: React.FC<AddFriendProps> = ({ onSuccess }) => {
 
   const handleAddFriend = async () => {
     if (!email) {
-      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני', type: 'error' });
-      return;
+        setMessage({ text: 'יש להזין כתובת דואר אלקטרוני', type: 'error' });
+        return;
     }
 
     // בדיקת תקינות כתובת המייל
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setMessage({ text: 'יש להזין כתובת דואר אלקטרוני תקינה', type: 'error' });
-      return;
+        setMessage({ text: 'יש להזין כתובת דואר אלקטרוני תקינה', type: 'error' });
+        return;
     }
 
     setLoading(true);
     setMessage(null);
 
     try {
-      const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ recipientEmail: email })
-      });
+        const response = await makeAuthenticatedRequest('http://localhost:5001/api/friends/request', {
+            method: 'POST',
+            body: JSON.stringify({ recipientEmail: email })
+        });
 
-      if (response.success || response.message) {
-        setMessage({ text: response.message || 'בקשת החברות נשלחה בהצלחה', type: 'success' });
-        setEmail('');
-        
-        if (onSuccess) {
-          setTimeout(onSuccess, 1500);
+        if (response.success) {
+            setMessage({ text: response.message, type: 'success' });
+            setEmail('');
+            if (onSuccess) {
+                setTimeout(onSuccess, 1500);
+            }
         }
-      }
-    } catch (error: any) {
-      handleAuthError(error);
-      setMessage({
-        text: error.message || 'שגיאה בשליחת בקשת החברות',
-        type: 'error'
-      });
+    } catch (error) {
+        if (error instanceof Error) {
+            setMessage({ 
+                text: error.message || 'שגיאה בשליחת בקשת החברות',
+                type: 'error'
+            });
+        }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !loading) {

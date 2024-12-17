@@ -26,7 +26,10 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpire: Date,
   verificationToken: String,
   verificationTokenExpiresAt: Date,
-  friends: [{ type: String }],
+  friends: {
+    type: [String],
+    default: []
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],
