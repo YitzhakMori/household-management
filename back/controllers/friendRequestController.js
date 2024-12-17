@@ -1,6 +1,7 @@
 import FriendRequest from '../models/friendRequestModel.js';
 import User from '../models/user.model.js';
 import { addFriend } from './House.controller.js';
+import {syncDataWithNewFriend} from './House.controller.js';
 
 /**
  * שליחת בקשת חברות
@@ -107,47 +108,77 @@ export const getFriendRequests = async (req, res) => {
         });
     }
 };
-
 export const acceptFriendRequest = async (req, res) => {
     try {
-        const { requestId } = req.body;
-        const userId = req.user.id;
-
-        // מציאת בקשת החבר
-        const friendRequest = await FriendRequest.findById(requestId);
-        console.log("🚀 ~ acceptFriendRequest ~ friendRequest:", friendRequest);
-
-        if (!friendRequest) {
-            return res.status(404).json({ message: "הבקשה לא נמצאה" });
-        }
-
-        // בדיקת הרשאה
-        if (friendRequest.recipient.toString() !== userId.toString()) {
-            return res.status(403).json({ message: "אין לך הרשאה לאשר את הבקשה הזאת" });
-        }
-
-        // קוראים ל-addFriend עם המייל בלבד
-        const result = await addFriend(userId, friendRequest.senderEmail);
-        console.log(userId, friendRequest.senderEmail);
-
-        if (!result.success) {
-            return res.status(400).json({ message: result.message });
-        }
-
-        // מחיקת הבקשה
+      const { requestId } = req.body;
+      const userId = req.user._id; // שימוש ב-_id במקום id
+  
+      // מציאת בקשת החבר
+      const friendRequest = await FriendRequest.findById(requestId);
+      console.log("Found friend request:", friendRequest);
+      
+      if (!friendRequest) {
+        return res.status(404).json({ success: false, message: "הבקשה לא נמצאה" });
+      }
+  
+      // בדיקת הרשאה
+      if (friendRequest.recipient.toString() !== userId.toString()) {
+        return res.status(403).json({ success: false, message: "אין לך הרשאה לאשר את הבקשה הזאת" });
+      }
+  
+      // מציאת המשתמשים
+      const senderUser = await User.findById(friendRequest.sender);
+      const recipientUser = await User.findById(userId);
+  
+      if (!senderUser || !recipientUser) {
+        return res.status(404).json({ success: false, message: "אחד המשתמשים לא נמצא" });
+      }
+  
+      // הוספת החברים לרשימות אחד של השני
+      senderUser.friends.push(recipientUser.email);
+      recipientUser.friends.push(senderUser.email);
+  
+      await senderUser.save();
+      await recipientUser.save();
+  
+      // סנכרון הנתונים
+      try {
+        await syncDataWithNewFriend(friendRequest.sender, userId);
+        
+        // עדכון סטטוס הבקשה
+        friendRequest.status = 'accepted';
+        await friendRequest.save();
+  
+        // מחיקת הבקשה אחרי שאושרה
         await FriendRequest.findByIdAndDelete(requestId);
-
-        // מחזירים רק את המייל בתשובה, לא את האובייקט המלא
-        res.status(200).json({ 
-            success: true,
-            message: "החבר נוסף בהצלחה", 
-            friend: friendRequest.senderEmail // שולחים רק את המייל
+  
+        return res.status(200).json({
+          success: true,
+          message: "החבר נוסף והנתונים סונכרנו בהצלחה",
+          friend: {
+            email: senderUser.email,
+            name: senderUser.name
+          }
         });
+      } catch (syncError) {
+        console.error('Error in data sync:', syncError);
+        return res.status(200).json({
+          success: true,
+          message: "החבר נוסף אבל היתה בעיה בסנכרון הנתונים",
+          friend: {
+            email: senderUser.email,
+            name: senderUser.name
+          }
+        });
+      }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "שגיאה בשרת" });
+      console.error('Error in acceptFriendRequest:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "שגיאה באישור בקשת החברות" 
+      });
     }
-};
+  };
 
 export const rejectFriendRequest = async (req, res) => {
     try {

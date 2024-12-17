@@ -1,6 +1,9 @@
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongoose';
+import FriendRequest from '../models/friendRequestModel.js';  // הוסף את זה
+
 
 
 import crypto from "crypto";
@@ -10,6 +13,11 @@ import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js
 import { sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/emails.js";
 import { sendWelcomeEmail } from "../mailtrap/emails.js";
 import { sendPasswordResetEmail } from "../mailtrap/emails.js";
+
+import ShoppingItem from '../models/shoppingItemModel.js';
+import Task from '../models/taskModel.js';
+import Event from '../models/Event.js';
+import Transaction from '../models/transactionsModel.js';
 
 
 
@@ -324,45 +332,139 @@ export const googleAuth = async (req, res) => {
     }
 };
 
-export const addFriend = async (userId, friendEmail) => {
+
+export const addFriend = async (req, res) => {
     try {
-        if (!friendEmail) {
-            return { success: false, message: "יש להזין מייל של חבר" };
-        }
-
-        const user = await User.findById(userId);
-        if (!user) {
-            return { success: false, message: "משתמש לא נמצא" };
-        }
-
-        if (user.email === friendEmail) {
-            return { success: false, message: "לא ניתן להוסיף את עצמך כחבר" };
-        }
-
-        const friendUser = await User.findOne({ email: friendEmail });
-        if (!friendUser) {
-            return { success: false, message: "המשתמש המבוקש לא נמצא" };
-        }
-
-        if (user.friends.includes(friendUser._id)) {
-            return { success: false, message: "החבר כבר קיים ברשימה" };
-        }
-
-        user.friends.push(friendEmail);
-        await user.save();
-
-        friendUser.friends.push(user.email);
-        await friendUser.save();
-
-        return { 
-            success: true, 
-            message: "החבר נוסף בהצלחה", 
-            friend: friendUser
-        };
+      const { friendEmail } = req.body;
+      const userId = req.user._id;
+  
+      if (!friendEmail) {
+        return res.status(400).json({ success: false, message: "יש להזין מייל של חבר" });
+      }
+  
+      // בדיקה אם המשתמש הנוכחי קיים
+      const currentUser = await User.findById(userId);
+      if (!currentUser) {
+        return res.status(404).json({ success: false, message: "משתמש לא נמצא" });
+      }
+  
+      if (currentUser.email === friendEmail) {
+        return res.status(400).json({ success: false, message: "לא ניתן להוסיף את עצמך כחבר" });
+      }
+  
+      // בדיקה אם החבר קיים במערכת
+      const friendUser = await User.findOne({ email: friendEmail });
+      if (!friendUser) {
+        return res.status(404).json({ success: false, message: "המשתמש המבוקש לא נמצא" });
+      }
+  
+      // בדיקה אם כבר חברים
+      if (currentUser.friends.includes(friendEmail)) {
+        return res.status(400).json({ success: false, message: "החבר כבר קיים ברשימה" });
+      }
+  
+      // בדיקה אם כבר יש בקשת חברות ממתינה
+      const existingRequest = await FriendRequest.findOne({
+        sender: userId,
+        recipient: friendUser._id,
+        status: 'pending'
+      });
+  
+      if (existingRequest) {
+        return res.status(400).json({ success: false, message: "כבר נשלחה בקשת חברות למשתמש זה" });
+      }
+  
+      // יצירת בקשת חברות חדשה
+      const friendRequest = new FriendRequest({
+        sender: userId,
+        senderEmail: currentUser.email,
+        recipient: friendUser._id,
+        status: 'pending'
+      });
+  
+      await friendRequest.save();
+  
+      return res.status(200).json({ 
+        success: true, 
+        message: "בקשת החברות נשלחה בהצלחה", 
+      });
+  
     } catch (error) {
-        console.error(error);
-        return { success: false, message: "שגיאה בשרת" };
+      console.error('Error in addFriend:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "שגיאה בשליחת בקשת החברות"
+      });
     }
+  };
+
+export const syncDataWithNewFriend = async (userId, friendId) => {
+  console.log('Starting data sync:', { userId, friendId });
+  
+  try {
+    // סנכרון רשימת קניות
+    const shoppingItems = await ShoppingItem.find({ userId });
+    console.log(`Found ${shoppingItems.length} shopping items to sync`);
+    
+    if (shoppingItems.length > 0) {
+      const itemsToAdd = shoppingItems.map(item => ({
+        userId: friendId,
+        name: item.name,
+        quantity: item.quantity,
+        isPurchased: item.isPurchased,
+        itemGroupId: item.itemGroupId
+      }));
+      await ShoppingItem.insertMany(itemsToAdd);
+    }
+
+    // סנכרון משימות
+    const tasks = await Task.find({ userId });
+    if (tasks.length > 0) {
+      const tasksToAdd = tasks.map(task => ({
+        userId: friendId,
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate,
+        status: task.status,
+        taskGroupId: task.taskGroupId
+      }));
+      await Task.insertMany(tasksToAdd);
+    }
+
+    // סנכרון אירועים
+    const events = await Event.find({ userId });
+    if (events.length > 0) {
+      const eventsToAdd = events.map(event => ({
+        userId: friendId,
+        title: event.title,
+        date: event.date,
+        description: event.description,
+        eventGroupId: event.eventGroupId
+      }));
+      await Event.insertMany(eventsToAdd);
+    }
+
+    // סנכרון הוצאות והכנסות
+    const transactions = await Transaction.find({ userId });
+    if (transactions.length > 0) {
+      const transactionsToAdd = transactions.map(transaction => ({
+        userId: friendId,
+        type: transaction.type,
+        amount: transaction.amount,
+        description: transaction.description,
+        category: transaction.category,
+        date: transaction.date,
+        transactionGroupId: transaction.transactionGroupId
+      }));
+      await Transaction.insertMany(transactionsToAdd);
+    }
+
+    console.log('Data sync completed successfully');
+    return true;
+  } catch (error) {
+    console.error('Error in syncDataWithNewFriend:', error);
+    throw error;
+  }
 };
 
 // בקובץ House.controller.js או friends.controller.js

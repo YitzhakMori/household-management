@@ -9,5 +9,4 @@ const friendRequestSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }, // מתי הבקשה נוצרה
 });
 
-// const FriendRequest = mongoose.model('FriendRequest', friendRequestSchema);
 export default mongoose.model('FriendRequest', friendRequestSchema);
