@@ -11,17 +11,19 @@ const FixedPaymentsTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // טעינה ראשונית
+  const getCurrentDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   useEffect(() => {
     loadFixedPayments();
   }, []);
 
-  // רענון אוטומטי
   useEffect(() => {
     const interval = setInterval(() => {
       loadFixedPayments();
       updateFinancialData();
-    }, 300000); // רענון כל 30 שניות
+    }, 300000);
 
     return () => clearInterval(interval);
   }, []);
@@ -50,7 +52,7 @@ const FixedPaymentsTable: React.FC = () => {
         await addFixedPayment(editingFixedPayment);
       }
       await loadFixedPayments();
-      await updateFinancialData(); // עדכון הנתונים הפיננסיים
+      await updateFinancialData();
       setIsModalOpen(false);
       setEditingFixedPayment(null);
     } catch (error) {
@@ -67,7 +69,7 @@ const FixedPaymentsTable: React.FC = () => {
       setLoading(true);
       await deleteFixedPayment(id);
       await loadFixedPayments();
-      await updateFinancialData(); // עדכון הנתונים הפיננסיים
+      await updateFinancialData();
     } catch (error) {
       setError('שגיאה במחיקת התשלום הקבוע');
     } finally {
@@ -84,7 +86,6 @@ const FixedPaymentsTable: React.FC = () => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 p-4">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 mb-6">
         <div className="flex justify-between items-center">
           <div className="text-white">
@@ -93,7 +94,7 @@ const FixedPaymentsTable: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setEditingFixedPayment({ _id: '', amount: 0, description: '', date: '' });
+              setEditingFixedPayment({ _id: '', amount: 0, description: '', date: getCurrentDate() });
               setIsModalOpen(true);
             }}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg 
@@ -105,7 +106,6 @@ const FixedPaymentsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Status Messages */}
       {loading && (
         <div className="text-center bg-white rounded-lg shadow p-4 mb-6">
           <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full"></div>
@@ -122,7 +122,6 @@ const FixedPaymentsTable: React.FC = () => {
         </div>
       )}
 
-      {/* Fixed Payments Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -174,7 +173,6 @@ const FixedPaymentsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
@@ -226,7 +224,7 @@ const FixedPaymentsTable: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">תאריך חיוב</label>
                   <input
                     type="date"
-                    value={editingFixedPayment?.date ? new Date(editingFixedPayment.date).toISOString().split('T')[0] : ''}
+                    value={editingFixedPayment?.date || getCurrentDate()}
                     onChange={e => setEditingFixedPayment(prev => prev ? { ...prev, date: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />

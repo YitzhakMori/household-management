@@ -85,7 +85,7 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
             rows={4}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none hover:border-blue-400"
             placeholder="הוסף תיאור לאירוע"
-            required
+            
           />
         </div>
 
