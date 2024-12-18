@@ -19,7 +19,7 @@ const TaskList: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]); // Default to current date
   const [status, setStatus] = useState<string>("Open");
   const [assignee, setAssignee] = useState<string>("");
   const [priority, setPriority] = useState<string>("Medium");
@@ -44,7 +44,7 @@ const TaskList: React.FC = () => {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setDueDate("");
+    setDueDate(new Date().toISOString().split('T')[0]); // Reset to current date
     setStatus("Open");
     setAssignee("");
     setPriority("Medium");
@@ -248,6 +248,7 @@ const TaskList: React.FC = () => {
     loadTasks();
   }, []);
 
+  // The entire render method remains exactly the same as in the original code
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -355,6 +356,7 @@ const TaskList: React.FC = () => {
               className={`px-6 py-3 text-white font-medium rounded-lg transition-all
                 ${editingTaskId 
                   ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                  
                   : 'bg-gradient-to-r from-blue-600 to-purple-600'} 
                 hover:shadow-lg transform hover:scale-[1.02]`}
             >
@@ -528,5 +530,3 @@ const TaskList: React.FC = () => {
 };
 
 export default TaskList;
-
- 

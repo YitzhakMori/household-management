@@ -32,7 +32,7 @@ const AdminPage: React.FC = () => {
   };
 
   const handleDelete = async (userId: string) => {
-    if (window.confirm("האם אתה בטוח שברצונך למחוק משתמש זה?")) {
+     {
       try {
         await deleteUserById(userId);
         setUsers(users.filter((user) => user._id !== userId));
@@ -63,7 +63,7 @@ const AdminPage: React.FC = () => {
               onClick={() => window.location.href = '/home'}
               className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"
             >
-              חזרה לדף הבית
+              מעבר לדף הבית
             </button>
           </div>
         </div>

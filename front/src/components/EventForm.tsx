@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Event, EventFormProps } from '../interfaces/Event';
 
 const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event }) => {
   const [formState, setFormState] = useState<Event>({
     title: "",
-    date: "",
+    date: new Date().toISOString().split('T')[0], // Default to current date
     description: "",
   });
 
@@ -13,7 +12,11 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
     if (event) {
       setFormState(event);
     } else {
-      setFormState({ title: "", date: "", description: "" });
+      setFormState({ 
+        title: "", 
+        date: new Date().toISOString().split('T')[0], // Reset to current date
+        description: "" 
+      });
     }
   }, [event]);
 
@@ -85,7 +88,6 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent, onUpdateEvent, event 
             rows={4}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none hover:border-blue-400"
             placeholder="הוסף תיאור לאירוע"
-            
           />
         </div>
 
