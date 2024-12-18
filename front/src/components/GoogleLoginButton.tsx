@@ -50,10 +50,9 @@ const GoogleLoginButton = () => {
           throw new Error(data.message || 'חסרים נתונים בתגובה מהשרת');
         }
         window.location.reload();
-<<<<<<< HEAD
 
-=======
->>>>>>> b22dfa55fb22f8aa80c11e424c0c891e4e681e33
+
+
       } catch (error) {
         console.error('Google login error:', error);
         setError(error instanceof Error ? error.message : 'שגיאה בהתחברות');
