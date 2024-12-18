@@ -114,6 +114,8 @@ const LoginPage = () => {
         } else {
           throw new Error(data.message || 'חסרים נתונים בתגובה מהשרת');
         }
+        window.location.reload();
+
       } catch (error) {
         console.error('Google login error:', error);
         setError(error instanceof Error ? error.message : 'שגיאה בהתחברות');

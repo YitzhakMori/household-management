@@ -56,7 +56,7 @@ export const signup = async (req, res) => {
 		// jwt
 		generateTokenAndSetCookie(res, user._id,user.name);
 
-		// await sendVerificationEmail(user.email, verificationToken);
+		await sendVerificationEmail(user.email, verificationToken);
 
 		res.status(201).json({
 			success: true,
@@ -299,13 +299,15 @@ export const googleAuth = async (req, res) => {
         console.log("Created JWT token for user:", {
             userId: user._id,
             role: user.role,
-            tokenPrefix: jwtToken.substring(0, 20) + '...'
+            tokenPrefix: jwtToken.substring(0, 20) + '...',
+            token: jwtToken
         });
 
         // שליחת תגובה
         res.status(200).json({
             success: true,
             message: "התחברות עם Google בוצעה בהצלחה",
+            
             token: jwtToken,
             user: {
                 id: user._id,
@@ -315,7 +317,7 @@ export const googleAuth = async (req, res) => {
                 friends: user.friends
             }
         });
-
+        
     } catch (error) {
         console.error("Google Auth Error:", {
             name: error.name,
