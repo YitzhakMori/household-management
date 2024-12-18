@@ -32,7 +32,7 @@ const AdminPage: React.FC = () => {
   };
 
   const handleDelete = async (userId: string) => {
-    if (window.confirm("האם אתה בטוח שברצונך למחוק משתמש זה?")) {
+     {
       try {
         await deleteUserById(userId);
         setUsers(users.filter((user) => user._id !== userId));
