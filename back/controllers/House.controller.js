@@ -56,7 +56,7 @@ export const signup = async (req, res) => {
 		// jwt
 		generateTokenAndSetCookie(res, user._id,user.name);
 
-		// await sendVerificationEmail(user.email, verificationToken);
+		await sendVerificationEmail(user.email, verificationToken);
 
 		res.status(201).json({
 			success: true,
@@ -411,6 +411,8 @@ export const syncDataWithNewFriend = async (userId, friendId) => {
         userId: friendId,
         name: item.name,
         quantity: item.quantity,
+        category: item.category,
+        unit: item.unit,
         isPurchased: item.isPurchased,
         itemGroupId: item.itemGroupId
       }));
@@ -426,6 +428,8 @@ export const syncDataWithNewFriend = async (userId, friendId) => {
         description: task.description,
         dueDate: task.dueDate,
         status: task.status,
+        assignee: task.assignee,
+        priority: task.priority,
         taskGroupId: task.taskGroupId
       }));
       await Task.insertMany(tasksToAdd);

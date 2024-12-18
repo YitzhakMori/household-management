@@ -184,6 +184,11 @@ const ShoppingList: React.FC = () => {
         // אם שניהם קנויים או שניהם לא קנויים, נמיין לפי קטגוריה
         const categoryA = a.category || 'כללי';
         const categoryB = b.category || 'כללי';
+
+        if (categoryA === categoryB) {
+          // אם הקטגוריה זהה, נמיין לפי שם הפריט
+          return a.name.localeCompare(b.name);
+        }
         return categoryA.localeCompare(categoryB);
       }
       // פריטים שנקנו יופיעו בסוף
