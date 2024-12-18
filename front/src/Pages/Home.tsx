@@ -102,6 +102,7 @@ const Home: React.FC = () => {
         prevRequests.filter((request) => request._id !== requestId)
       );
       showAlert("בקשת החברות אושרה בהצלחה", "success");
+      window.location.reload();
     } catch (error) {
       showAlert("שגיאה באישור הבקשה", "error");
     }
@@ -155,7 +156,7 @@ const Home: React.FC = () => {
 
   const quickStats = [
     {
-      label: "הוצאות השבוע",
+      label: "הוצאות החודש",
       value: financialData.totalExpenses,
       trend: "+12%",
       icon: "📈",

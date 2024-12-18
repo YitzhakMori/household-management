@@ -10,6 +10,11 @@ const TransactionsTable: React.FC = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+
+  const getCurrentDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -59,7 +64,7 @@ const TransactionsTable: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('האם אתה בטוח שברצונך למחוק עסקה זו?')) return;
+    
 
     try {
       setLoading(true);
@@ -84,7 +89,7 @@ const TransactionsTable: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setEditingTransaction({ _id: '', type: 'income', amount: 0, description: '', date: '' });
+              setEditingTransaction({ _id: '', type: 'income', amount: 0, description: '', date: getCurrentDate() });
               setIsModalOpen(true);
             }}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg 
@@ -236,7 +241,7 @@ const TransactionsTable: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">תאריך</label>
                   <input
                     type="date"
-                    value={editingTransaction?.date ? new Date(editingTransaction.date).toISOString().split('T')[0] : ''}
+                    value={editingTransaction?.date || getCurrentDate()}
                     onChange={e => setEditingTransaction(prev => prev ? { ...prev, date: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />

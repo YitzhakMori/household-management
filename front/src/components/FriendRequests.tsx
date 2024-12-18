@@ -150,7 +150,9 @@ const Home: React.FC = () => {
       });
       
       await loadFriendRequests();
+      
       showAlert('בקשת החברות אושרה בהצלחה', 'success');
+      window.location.reload();
     } catch (error) {
       handleAuthError(error);
       showAlert('שגיאה באישור הבקשה', 'error');
