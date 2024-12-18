@@ -58,7 +58,7 @@ const AdminPage: React.FC = () => {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white">פאנל ניהול</h1>
+            <h1 className="text-3xl font-bold text-white">ניהול משתמשים</h1>
             <button
               onClick={() => window.location.href = '/home'}
               className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all"

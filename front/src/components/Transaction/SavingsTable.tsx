@@ -11,17 +11,19 @@ const SavingsTable: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // טעינה ראשונית
+  const getCurrentDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   useEffect(() => {
     loadSavings();
   }, []);
 
-  // רענון אוטומטי
   useEffect(() => {
     const interval = setInterval(() => {
       loadSavings();
       updateFinancialData();
-    }, 300000); // רענון כל 30 שניות
+    }, 300000);
 
     return () => clearInterval(interval);
   }, []);
@@ -50,7 +52,7 @@ const SavingsTable: React.FC = () => {
         await addSaving(editingSaving);
       }
       await loadSavings();
-      await updateFinancialData(); // עדכון הנתונים הפיננסיים
+      await updateFinancialData();
       setIsModalOpen(false);
       setEditingSaving(null);
     } catch (error) {
@@ -67,7 +69,7 @@ const SavingsTable: React.FC = () => {
       setLoading(true);
       await deleteSaving(id);
       await loadSavings();
-      await updateFinancialData(); // עדכון הנתונים הפיננסיים
+      await updateFinancialData();
     } catch (error) {
       setError('שגיאה במחיקת החיסכון');
     } finally {
@@ -84,7 +86,6 @@ const SavingsTable: React.FC = () => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 p-4">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 mb-6">
         <div className="flex justify-between items-center">
           <div className="text-white">
@@ -93,7 +94,7 @@ const SavingsTable: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              setEditingSaving({ _id: '', amount: 0, description: '', date: '' });
+              setEditingSaving({ _id: '', amount: 0, description: '', date: getCurrentDate() });
               setIsModalOpen(true);
             }}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg 
@@ -105,7 +106,6 @@ const SavingsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Status Messages */}
       {loading && (
         <div className="text-center bg-white rounded-lg shadow p-4 mb-6">
           <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full"></div>
@@ -122,7 +122,6 @@ const SavingsTable: React.FC = () => {
         </div>
       )}
 
-      {/* Savings Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -174,7 +173,6 @@ const SavingsTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
@@ -215,10 +213,21 @@ const SavingsTable: React.FC = () => {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">תיאור</label>
+                  <input
+                    type="text"
+                    value={editingSaving?.description || ''}
+                    onChange={e => setEditingSaving(prev => prev ? { ...prev, description: e.target.value } : prev)}
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="הזן תיאור"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">תאריך</label>
                   <input
                     type="date"
-                    value={editingSaving?.date ? new Date(editingSaving.date).toISOString().split('T')[0] : ''}
+                    value={editingSaving?.date || getCurrentDate()}
                     onChange={e => setEditingSaving(prev => prev ? { ...prev, date: e.target.value } : prev)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   />

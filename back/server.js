@@ -24,7 +24,7 @@ const app = express();
 const createAdmin = async () => {
     try {
         // בודק אם כבר קיים משתמש אדמין במערכת
-        const existingAdmin = await User.findOne({ email: 'xyz@gmail.com' });
+        const existingAdmin = await User.findOne({ email: 'Admin@gmail.com' });
 
         if (!existingAdmin) {
             // סיסמה שאתה רוצה להגדיר לאדמין
@@ -35,9 +35,9 @@ const createAdmin = async () => {
 
             // יצירת משתמש אדמין חדש
             const adminUser = new User({
-                email: 'xyz@gmail.com',  // המייל שלך כאדמין
+                email: 'Admin@gmail.com',  // המייל שלך כאדמין
                 password: hashedPassword,    // הסיסמה המוצפנת
-                name: 'Admin User',          // שם המשתמש
+                name: 'Admin ',          // שם המשתמש
                 role: 'admin'                // תפקיד אדמין
             });
 
